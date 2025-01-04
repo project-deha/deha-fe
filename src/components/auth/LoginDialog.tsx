@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import axios from 'axios'
 import {
     Dialog,
     DialogContent,
@@ -33,6 +34,8 @@ export function LoginDialog({
     isOpen: boolean
     onClose: () => void
 }) {
+    const [isLoading, setIsLoading] = useState(false)
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -43,11 +46,24 @@ export function LoginDialog({
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            // Burada API'ye giriş isteği gönderilecek
-            console.log('Giriş bilgileri:', values)
+            setIsLoading(true)
+            const response = await axios.post(
+                'http://localhost:8080/api/v1/auth/login',
+                {
+                    email: values.email,
+                    password: values.password,
+                },
+                {
+                    withCredentials: true,
+                }
+            )
+            console.log('Login successful:', response.data)
             onClose()
         } catch (error) {
-            console.error('Giriş hatası:', error)
+            console.error('Login error:', error)
+            // You might want to show an error message to the user here
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -94,8 +110,12 @@ export function LoginDialog({
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white">
-                            Giriş Yap
+                        <Button 
+                            type="submit" 
+                            className="w-full bg-black hover:bg-gray-800 text-white"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
                         </Button>
                     </form>
                 </Form>
