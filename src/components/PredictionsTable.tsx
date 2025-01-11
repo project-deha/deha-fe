@@ -19,6 +19,9 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import axios from 'axios'
+import { useAtom } from "jotai"
+import { predictionsAtom } from "@/store/predictions"
+import { predictionsService } from "@/services/predictionsServices"
 
 type CustomDateRange = {
     from: Date | null;
@@ -63,27 +66,25 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
         key: 'magnitude',
         direction: 'desc'
     })
-    const [predictions, setPredictions] = useState<any>(null)
+    const [predictions, setPredictions] = useAtom(predictionsAtom)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetchPredictions(currentPage)
+        fetchPredictions()
     }, [currentPage, dateRange, selectedCity, magnitude])
 
-    const fetchPredictions = async (page: number) => {
+    const fetchPredictions = async () => {
         try {
             setLoading(true)
-            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
-                minMagnitude: magnitude || 0,
-                maxMagnitude: 10,
-                city: selectedCity ? selectedCity : null,
-                startDate: dateRange?.from ? new Date(dateRange.from).toISOString() : null,
-                endDate: dateRange?.to ? new Date(dateRange.to).toISOString() : null,
-                page: page - 1,
+            const searchParams = {
+                dateRange,
+                selectedCity,
+                magnitude,
+                page: currentPage - 1,
                 size: itemsPerPage
-            })
-
-            setPredictions(response.data)
+            }
+            const response = await predictionsService.filterPredictions(searchParams)
+            setPredictions(response)
         } catch (error) {
             console.error('Error fetching predictions:', error)
         } finally {

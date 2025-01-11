@@ -12,10 +12,11 @@ import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { CircularProgress } from '@/components/ui/circular-progress'
-import axios from 'axios'
-import { useSetAtom } from 'jotai'
+import { predictionsService } from '@/services/predictionsServices'
+import { useAtomValue, useSetAtom } from 'jotai'
 import { predictionsAtom } from '@/store/predictions'
-import { API_BASE_URL } from '@/config/constants'
+import { useSearch } from '@/contexts/SearchContext'
+
 // Türkiye şehirleri listesi
 const cities = [
     "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın",
@@ -49,17 +50,18 @@ export function SearchBar({
     initialMagnitude = 0.0
 }: SearchBarProps) {
     const [dateType, setDateType] = useState<'days' | 'months'>('days')
-    const [dateRange, setDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
+    //const [dateRange, setDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
     const [confirmedDateRange, setConfirmedDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
-    const [selectedCity, setSelectedCity] = useState<string>(initialCity || '')
+    //const [selectedCity, setSelectedCity] = useState<string>(initialCity || '')
     const [confirmedCity, setConfirmedCity] = useState<string>(initialCity || '')
     const [cityInput, setCityInput] = useState<string>('')
     const [monthCount, setMonthCount] = useState(1)
     const [confirmedMonthCount, setConfirmedMonthCount] = useState(0)
-    const [magnitude, setMagnitude] = useState(initialMagnitude)
+    //const [magnitude, setMagnitude] = useState(initialMagnitude)
     const [confirmedMagnitude, setConfirmedMagnitude] = useState(initialMagnitude)
     const [isOpen, setIsOpen] = useState({ date: false, city: false, magnitude: false })
 
+    const { dateRange, selectedCity, magnitude, setDateRange, setSelectedCity, setMagnitude } = useSearch()
     const setPredictions = useSetAtom(predictionsAtom)
 
     useEffect(() => {
@@ -78,17 +80,8 @@ export function SearchBar({
         page?: number
     }) => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
-                minMagnitude: params.magnitude || 0,
-                maxMagnitude: 10,
-                city: params.selectedCity ? params.selectedCity : null,
-                startDate: params.dateRange?.from ? new Date(params.dateRange.from).toISOString() : null,
-                endDate: params.dateRange?.to ? new Date(params.dateRange.to).toISOString() : null,
-                page: params.page || 0,
-                size: 20
-            })
-
-            setPredictions(response.data)
+            const data = await predictionsService.filterPredictions(params);
+            setPredictions(data)
         } catch (error) {
             console.error('Error fetching predictions:', error)
         }
@@ -128,7 +121,7 @@ export function SearchBar({
             selectedCity: confirmedCity,
             magnitude: confirmedMagnitude
         }
-        await fetchPredictions(params)
+        //await fetchPredictions(params)
         onSearch(params)
     }
 
@@ -140,9 +133,9 @@ export function SearchBar({
 
         const params = {
             dateRange: confirmedDateRange,
-            magnitude: confirmedMagnitude
+            magnitude: confirmedMagnitude,
         }
-        await fetchPredictions(params)
+        //await fetchPredictions(params)
         onSearch(params)
     }
 
@@ -155,7 +148,7 @@ export function SearchBar({
             dateRange: confirmedDateRange,
             selectedCity: confirmedCity
         }
-        await fetchPredictions(params)
+        //await fetchPredictions(params)
         onSearch(params)
     }
 
@@ -194,8 +187,20 @@ export function SearchBar({
                     <div className="p-4">
                         <Calendar
                             mode="range"
-                            selected={dateRange}
-                            onSelect={setDateRange}
+                            selected={{
+                                from: dateRange?.from || undefined,
+                                to: dateRange?.to || undefined
+                            }}
+                            onSelect={(range) => {
+                                if (range) {
+                                    setDateRange({
+                                        from: range.from || null,
+                                        to: range.to || null
+                                    })
+                                } else {
+                                    setDateRange(undefined)
+                                }
+                            }}
                             numberOfMonths={1}
                             locale={tr}
                         />
@@ -335,9 +340,9 @@ export function SearchBar({
                     <div className="p-4 pt-2">
                         <div className="flex flex-col items-center gap-4">
                             <CircularProgress
-                                value={magnitude}
+                                value={confirmedMagnitude}
                                 maxValue={10}
-                                label={magnitude.toFixed(1)}
+                                label={confirmedMagnitude.toFixed(1)}
                                 size={120}
                                 strokeWidth={12}
                             />
@@ -346,8 +351,8 @@ export function SearchBar({
                                 min="0"
                                 max="10"
                                 step="0.1"
-                                value={magnitude}
-                                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                                value={confirmedMagnitude}
+                                onChange={(e) => setConfirmedMagnitude(parseFloat(e.target.value))}
                                 className="w-full"
                             />
                         </div>
@@ -355,15 +360,14 @@ export function SearchBar({
                     <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={async () => {
-                                setConfirmedMagnitude(magnitude)
+                            onClick={() => {
+                                setMagnitude(confirmedMagnitude)
                                 setIsOpen(prev => ({ ...prev, magnitude: false }))
                                 const params = {
                                     dateRange: confirmedDateRange,
                                     selectedCity: confirmedCity,
-                                    magnitude: magnitude || undefined
+                                    magnitude: confirmedMagnitude || undefined
                                 }
-                                await fetchPredictions(params)
                                 onSearch(params)
                             }}
                         >

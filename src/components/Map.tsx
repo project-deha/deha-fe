@@ -4,12 +4,11 @@ import React, { useEffect, useState } from 'react';
 import TurkeyMap from 'turkey-map-react';
 import { Tooltip } from "antd";
 import { useAtomValue, useSetAtom } from 'jotai';
-import { predictionsAtom, PredictedEarthquakeDto } from '@/store/predictions';
+import { predictionsAtom, PredictedEarthquakeDto, PageResponse } from '@/store/predictions';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import { useSearch } from '@/contexts/SearchContext';
-import { API_BASE_URL } from '@/config/constants'
-import axios from 'axios'
+import { predictionsService } from '@/services/predictionsServices';
 // Update TooltipContent to handle navigation
 function TooltipContent({ predictions, cityName }: { predictions?: PredictedEarthquakeDto[], cityName: string }) {
     const router = useRouter();
@@ -61,39 +60,31 @@ function TooltipContent({ predictions, cityName }: { predictions?: PredictedEart
     </div>
 }
 
-// Add a new interface for city type
-interface City {
-    name: string;
-    plateNumber: string;
-}
+type CustomDateRange = {
+    from: Date | null;
+    to: Date | null;
+};
 
 export function Map() {
+    const { dateRange, selectedCity, magnitude, setDateRange, setSelectedCity, setMagnitude } = useSearch()
     const predictions = useAtomValue(predictionsAtom);
     const setPredictions = useSetAtom(predictionsAtom);
     // Add state to track selected city
-    const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchInitialPredictions = async () => {
             try {
-                const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
-                    minMagnitude: 0,
-                    maxMagnitude: 10,
-                    city: null,
-                    startDate: null,
-                    endDate: null,
-                    page: 0,
-                    size: 8
-                })
-
-                setPredictions(response.data)
+                const response = await predictionsService.getMostPossibles();
+                setPredictions({
+                    content : response as PredictedEarthquakeDto[]
+                } as PageResponse)
             } catch (error) {
                 console.error('Error fetching initial predictions:', error)
             }
         }
 
         fetchInitialPredictions()
-    }, [setPredictions])
+    }, [])
 
     const cityWrapper = (cityComponent: JSX.Element, city: any) => {
         const cityPredictions = predictions?.content?.filter(
@@ -115,8 +106,8 @@ export function Map() {
             >
                 {React.cloneElement(cityComponent, {
                     style: {
-                        fill: highestPossibility ? '#ff4d4f' : '#d9d9d9',
-                        opacity: highestPossibility ? 0.8 : 0.5,
+                        fill: cityPredictions?.length && cityPredictions.length > 0 ? '#ff4d4f' : '#d9d9d9',
+                        opacity: cityPredictions?.length && cityPredictions.length > 0 ? 0.8 : 0.5,
                     },
                     onClick: (e: React.MouseEvent) => {
                         e.stopPropagation();
