@@ -12,6 +12,7 @@ export interface PredictedEarthquakeDto {
   depth: number
   location: LocationDto
   possibility: number
+  predictionDate: string
 }
 
 export interface PageResponse {
