@@ -33,8 +33,8 @@ export function Header({ showSearch = true, onSettingsClick }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b relative z-10">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+    <header className="bg-white dark:bg-gray-800 relative z-10">
+      <div className="container mx-auto px-4 py-4 h-28 flex items-center justify-between">
         <LogoDeha />
         {showSearch && (
           <SearchBar
