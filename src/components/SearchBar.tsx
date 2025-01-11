@@ -12,6 +12,10 @@ import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { CircularProgress } from '@/components/ui/circular-progress'
+import axios from 'axios'
+import { useSetAtom } from 'jotai'
+import { predictionsAtom } from '@/store/predictions'
+import { API_BASE_URL } from '@/config/constants'
 // Türkiye şehirleri listesi
 const cities = [
     "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın",
@@ -56,6 +60,8 @@ export function SearchBar({
     const [confirmedMagnitude, setConfirmedMagnitude] = useState(initialMagnitude)
     const [isOpen, setIsOpen] = useState({ date: false, city: false, magnitude: false })
 
+    const setPredictions = useSetAtom(predictionsAtom)
+
     useEffect(() => {
         setDateRange(initialDateRange)
         setConfirmedDateRange(initialDateRange)
@@ -65,12 +71,60 @@ export function SearchBar({
         setConfirmedMagnitude(initialMagnitude)
     }, [initialDateRange, initialCity, initialMagnitude])
 
-    const handleSearch = () => {
-        onSearch({
+    useEffect(() => {
+        const fetchInitialPredictions = async () => {
+            try {
+                const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
+                    minMagnitude: 0,
+                    maxMagnitude: 10,
+                    city: null,
+                    startDate: null,
+                    endDate: null,
+                    page: 0,
+                    size: 8
+                })
+                
+                setPredictions(response.data)
+            } catch (error) {
+                console.error('Error fetching initial predictions:', error)
+            }
+        }
+
+        fetchInitialPredictions()
+    }, [setPredictions])
+
+    const fetchPredictions = async (params: {
+        dateRange?: CustomDateRange,
+        selectedCity?: string,
+        magnitude?: number,
+        page?: number
+    }) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
+                minMagnitude: params.magnitude || 0,
+                maxMagnitude: 10,
+                city: params.selectedCity ? params.selectedCity : null,
+                startDate: params.dateRange?.from ? new Date(params.dateRange.from).toISOString() : null,
+                endDate: params.dateRange?.to ? new Date(params.dateRange.to).toISOString() : null,
+                page: params.page || 0,
+                size: 20
+            })
+            
+            setPredictions(response.data)
+        } catch (error) {
+            console.error('Error fetching predictions:', error)
+        }
+    }
+
+    const handleSearch = async () => {
+        const searchParams = {
             dateRange: confirmedDateRange,
             selectedCity: confirmedCity,
             magnitude: confirmedMagnitude
-        })
+        }
+        
+        await fetchPredictions(searchParams)
+        onSearch(searchParams)
     }
 
     const getDateRangeText = () => {
@@ -84,41 +138,47 @@ export function SearchBar({
         return "Tarih Seç"
     }
     // Temizleme fonksiyonları
-    const clearDate = () => {
+    const clearDate = async () => {
         setDateRange(undefined)
         setConfirmedDateRange(undefined)
         setMonthCount(1)
         setConfirmedMonthCount(0)
         setDateType('days')
         setIsOpen(prev => ({ ...prev, date: false }))
-        onSearch({
-            dateRange: undefined,
+        
+        const params = {
             selectedCity: confirmedCity,
             magnitude: confirmedMagnitude
-        })
+        }
+        await fetchPredictions(params)
+        onSearch(params)
     }
 
-    const clearCity = () => {
+    const clearCity = async () => {
         setSelectedCity('')
         setConfirmedCity('')
         setCityInput('')
         setIsOpen(prev => ({ ...prev, city: false }))
-        onSearch({
+        
+        const params = {
             dateRange: confirmedDateRange,
-            selectedCity: undefined,
             magnitude: confirmedMagnitude
-        })
+        }
+        await fetchPredictions(params)
+        onSearch(params)
     }
 
-    const clearMagnitude = () => {
+    const clearMagnitude = async () => {
         setMagnitude(0.0)
         setConfirmedMagnitude(0.0)
         setIsOpen(prev => ({ ...prev, magnitude: false }))
-        onSearch({
+        
+        const params = {
             dateRange: confirmedDateRange,
-            selectedCity: confirmedCity,
-            magnitude: undefined
-        })
+            selectedCity: confirmedCity
+        }
+        await fetchPredictions(params)
+        onSearch(params)
     }
 
     return (
@@ -165,14 +225,16 @@ export function SearchBar({
                     <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={() => {
+                            onClick={async () => {
                                 setConfirmedDateRange(dateRange)
                                 setIsOpen(prev => ({ ...prev, date: false }))
-                                onSearch({
+                                const params = {
                                     dateRange: dateRange || undefined,
                                     selectedCity: confirmedCity,
                                     magnitude: confirmedMagnitude
-                                })
+                                }
+                                await fetchPredictions(params)
+                                onSearch(params)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -243,14 +305,16 @@ export function SearchBar({
                     <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={() => {
+                            onClick={async () => {
                                 setConfirmedCity(selectedCity)
                                 setIsOpen(prev => ({ ...prev, city: false }))
-                                onSearch({
+                                const params = {
                                     dateRange: confirmedDateRange,
                                     selectedCity: selectedCity || undefined,
                                     magnitude: confirmedMagnitude
-                                })
+                                }
+                                await fetchPredictions(params)
+                                onSearch(params)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -313,14 +377,16 @@ export function SearchBar({
                     <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={() => {
+                            onClick={async () => {
                                 setConfirmedMagnitude(magnitude)
                                 setIsOpen(prev => ({ ...prev, magnitude: false }))
-                                onSearch({
+                                const params = {
                                     dateRange: confirmedDateRange,
                                     selectedCity: confirmedCity,
                                     magnitude: magnitude || undefined
-                                })
+                                }
+                                await fetchPredictions(params)
+                                onSearch(params)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />

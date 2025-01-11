@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
     Table,
@@ -18,8 +18,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useSearch } from '@/contexts/SearchContext'
-import { staticEarthquakePredictions, EarthquakePrediction } from '@/data/staticEarthquakePredictions'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { predictionsAtom } from '@/store/predictions'
+import axios from 'axios'
 
 type CustomDateRange = {
     from: Date | null;
@@ -32,76 +33,72 @@ interface PredictionsTableProps {
     magnitude?: number;
 }
 
+interface LocationDto {
+    latitude: number
+    longitude: number
+    city: string
+}
+
+interface PredictedEarthquakeDto {
+    id: string
+    magnitude: number
+    depth: number
+    location: LocationDto
+    possibility: number
+    latitude?: number
+    longitude?: number
+    city?: string
+}
+
 type SortConfig = {
-    key: keyof EarthquakePrediction | null
+    key: keyof PredictedEarthquakeDto | 'city' | null
     direction: 'asc' | 'desc'
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+
 export function PredictionsTable({ dateRange, selectedCity, magnitude }: PredictionsTableProps) {
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(10)
+    const [itemsPerPage, setItemsPerPage] = useState(8)
     const [sortConfig, setSortConfig] = useState<SortConfig>({
-        key: 'date',
-        direction: 'asc'
+        key: 'magnitude',
+        direction: 'desc'
     })
-    const [filteredData, setFilteredData] = useState<EarthquakePrediction[]>([])
-    const { selectedCity: contextSelectedCity } = useSearch()
 
-    useEffect(() => {
-        let result = staticEarthquakePredictions
+    const predictions = useAtomValue(predictionsAtom)
+    const setPredictions = useSetAtom(predictionsAtom)
 
-        if (dateRange?.from && dateRange?.to) {
-            result = result.filter(item => {
-                const itemDate = new Date(item.date)
-                return itemDate >= dateRange.from! && itemDate <= dateRange.to!
-            })
-        }
-
-        if (selectedCity || contextSelectedCity) {
-            const city = selectedCity || contextSelectedCity
-            result = result.filter(item =>
-                item.location.toLowerCase().includes(city.toLowerCase())
-            )
-        }
-
-        if (magnitude) {
-            result = result.filter(item => item.magnitude >= magnitude)
-        }
-
-        setFilteredData(result)
-        setCurrentPage(1)
-    }, [dateRange, selectedCity, contextSelectedCity, magnitude])
-
-    const handleSort = (key: keyof EarthquakePrediction) => {
-        setSortConfig(current => ({
-            key,
-            direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
-        }))
+    if (!predictions || !predictions.content) {
+        return (
+            <div className="rounded-md border bg-white p-8 text-center">
+                <p className="text-gray-500">Loading predictions...</p>
+            </div>
+        )
     }
 
-    const sortData = (data: EarthquakePrediction[]) => {
-        if (!sortConfig.key) return data
-
-        return [...data].sort((a, b) => {
-            if (a[sortConfig.key!] < b[sortConfig.key!]) return sortConfig.direction === 'asc' ? -1 : 1
-            if (a[sortConfig.key!] > b[sortConfig.key!]) return sortConfig.direction === 'asc' ? 1 : -1
-            return 0
-        })
+    if (predictions.content.length === 0) {
+        return (
+            <div className="rounded-md border bg-white p-8 text-center">
+                <p className="text-gray-500">No predictions found.</p>
+            </div>
+        )
     }
 
-    const getSortIcon = (key: keyof EarthquakePrediction) => {
-        if (sortConfig.key !== key) return <ChevronDown className="inline h-4 w-4 opacity-50" />
-        return sortConfig.direction === 'asc' ?
-            <ChevronUp className="inline h-4 w-4" /> :
-            <ChevronDown className="inline h-4 w-4" />
-    }
+    const sortedData = [...predictions.content].sort((a, b) => {
+        if (!sortConfig.key) return 0
+        if (sortConfig.key === 'city') {
+            return sortConfig.direction === 'asc' 
+                ? a.location.city.localeCompare(b.location.city)
+                : b.location.city.localeCompare(a.location.city)
+        }
+        const aValue = sortConfig.key === 'location' ? a.location : a[sortConfig.key]
+        const bValue = sortConfig.key === 'location' ? b.location : b[sortConfig.key]
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+        return 0
+    })
 
-    const sortedData = sortData(filteredData)
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage)
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage)
-
-    const renderSortableHeader = (label: string, key: keyof EarthquakePrediction) => (
+    const renderSortableHeader = (label: string, key: keyof PredictedEarthquakeDto) => (
         <div
             className="flex items-center gap-1 cursor-pointer hover:bg-muted/50 p-2 rounded"
             onClick={() => handleSort(key)}
@@ -111,32 +108,61 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
         </div>
     )
 
+    const handleSort = (key: keyof PredictedEarthquakeDto) => {
+        setSortConfig(current => ({
+            key,
+            direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+        }))
+    }
+
+    const getSortIcon = (key: keyof PredictedEarthquakeDto) => {
+        if (sortConfig.key !== key) return <ChevronDown className="inline h-4 w-4 opacity-50" />
+        return sortConfig.direction === 'asc' ?
+            <ChevronUp className="inline h-4 w-4" /> :
+            <ChevronDown className="inline h-4 w-4" />
+    }
+
+    const handlePageChange = async (newPage: number) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
+                minMagnitude: magnitude || 0,
+                maxMagnitude: 10,
+                city: selectedCity ? selectedCity : null,
+                startDate: dateRange?.from ? new Date(dateRange.from).toISOString() : null,
+                endDate: dateRange?.to ? new Date(dateRange.to).toISOString() : null,
+                page: newPage - 1,
+                size: itemsPerPage
+            })
+            
+            setPredictions(response.data)
+            setCurrentPage(newPage)
+        } catch (error) {
+            console.error('Error changing page:', error)
+        }
+    }
+
     return (
         <div className="rounded-md border bg-white">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{renderSortableHeader('Tarih', 'date')}</TableHead>
-                        <TableHead>{renderSortableHeader('Saat', 'time')}</TableHead>
                         <TableHead>{renderSortableHeader('Enlem(N)', 'latitude')}</TableHead>
                         <TableHead>{renderSortableHeader('Boylam(E)', 'longitude')}</TableHead>
                         <TableHead>{renderSortableHeader('Derinlik(km)', 'depth')}</TableHead>
                         <TableHead>{renderSortableHeader('Büyüklük', 'magnitude')}</TableHead>
-                        <TableHead>{renderSortableHeader('Yer', 'location')}</TableHead>
-                        <TableHead>{renderSortableHeader('Olasılık', 'probability')}</TableHead>
+                        <TableHead>{renderSortableHeader('Şehir', 'city')}</TableHead>
+                        <TableHead>{renderSortableHeader('Olasılık', 'possibility')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="bg-sky-50">
-                    {paginatedData.map((prediction) => (
+                    {sortedData.map((prediction) => (
                         <TableRow key={prediction.id}>
-                            <TableCell>{new Date(prediction.date).toLocaleDateString('tr-TR')}</TableCell>
-                            <TableCell>{prediction.time}</TableCell>
-                            <TableCell>{prediction.latitude.toFixed(4)}</TableCell>
-                            <TableCell>{prediction.longitude.toFixed(4)}</TableCell>
+                            <TableCell>{prediction.location.latitude.toFixed(4)}</TableCell>
+                            <TableCell>{prediction.location.longitude.toFixed(4)}</TableCell>
                             <TableCell>{prediction.depth.toFixed(1)}</TableCell>
                             <TableCell>{prediction.magnitude.toFixed(1)}</TableCell>
-                            <TableCell>{prediction.location}</TableCell>
-                            <TableCell>%{prediction.probability}</TableCell>
+                            <TableCell>{prediction.location.city}</TableCell>
+                            <TableCell>%{(prediction.possibility * 100).toFixed(1)}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -145,45 +171,28 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
             <div className="flex items-center justify-between px-4 py-4 border-t">
                 <div className="flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">
-                        Sayfa başına satır
+                        Toplam {predictions.totalElements} tahmin
                     </p>
-                    <Select
-                        value={itemsPerPage.toString()}
-                        onValueChange={(value) => {
-                            setItemsPerPage(Number(value))
-                            setCurrentPage(1)
-                        }}
-                    >
-                        <SelectTrigger className="w-[70px]">
-                            <SelectValue placeholder={itemsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                            <SelectItem value="100">100</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div className="text-sm text-muted-foreground">
-                        Sayfa {currentPage} / {totalPages}
+                        Sayfa {predictions.number + 1} / {predictions.totalPages}
                     </div>
                     <div className="flex items-center gap-1">
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={predictions.number === 0}
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
-                            disabled={currentPage === totalPages}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={predictions.number === predictions.totalPages - 1}
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
