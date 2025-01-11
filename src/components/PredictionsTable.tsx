@@ -171,7 +171,7 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
                             <TableCell>{prediction.depth.toFixed(1)}</TableCell>
                             <TableCell>{prediction.magnitude.toFixed(1)}</TableCell>
                             <TableCell>{prediction.location.city}</TableCell>
-                            <TableCell>%{(prediction.possibility * 100).toFixed(1)}</TableCell>
+                            <TableCell>%{(prediction.possibility)}</TableCell>
                             <TableCell>{new Date(prediction.predictionDate).toLocaleDateString()}</TableCell>
                         </TableRow>
                     ))}
