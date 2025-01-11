@@ -28,21 +28,4 @@ const PopoverContent = React.forwardRef<
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-const PopoverClose = React.forwardRef<
-    React.ElementRef<typeof PopoverPrimitive.Close>,
-    React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Close>
->(({ className, ...props }, ref) => (
-    <PopoverPrimitive.Close
-        ref={ref}
-        className={cn(
-            "absolute top-2 right-2 rounded-md p-1 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring",
-            className
-        )}
-        {...props}
-    >
-        <span aria-hidden>×</span>
-    </PopoverPrimitive.Close>
-))
-PopoverClose.displayName = PopoverPrimitive.Close?.displayName || "PopoverClose"
-
-export { Popover, PopoverTrigger, PopoverContent, PopoverClose }
+export { Popover, PopoverTrigger, PopoverContent }

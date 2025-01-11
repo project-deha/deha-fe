@@ -73,6 +73,22 @@ export function VerificationDialog({
         }
     }
 
+    const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+        event.preventDefault()
+        const pastedData = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+        if (pastedData) {
+            const newCode = Array(6).fill('')
+            for (let i = 0; i < Math.min(pastedData.length, 6); i++) {
+                newCode[i] = pastedData[i]
+            }
+            setVerificationCode(newCode)
+            // Focus the next empty input or the last input if all are filled
+            const nextEmptyIndex = newCode.findIndex(digit => !digit)
+            const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex
+            inputRefs.current[focusIndex]?.focus()
+        }
+    }
+
     useEffect(() => {
         if (isOpen) {
             inputRefs.current[0]?.focus()
@@ -100,6 +116,7 @@ export function VerificationDialog({
                                 value={digit}
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
+                                onPaste={handlePaste}
                                 ref={(el) => (inputRefs.current[index] = el)}
                                 className="w-12 h-12 text-center text-lg"
                             />
@@ -117,4 +134,3 @@ export function VerificationDialog({
         </Dialog>
     )
 }
-

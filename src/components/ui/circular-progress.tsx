@@ -7,21 +7,24 @@ interface CircularProgressProps {
   maxValue: number
   size?: number
   strokeWidth?: number
-  label?: string
+  label?: string | number
   className?: string
+  showPercentage?: boolean
 }
 
 export function CircularProgress({
   value,
   maxValue,
-  size = 200,
-  strokeWidth = 20,
+  size = 120,
+  strokeWidth = 10,
   label,
-  className
+  className,
+  showPercentage = false
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
   const progress = (value / maxValue) * circumference
+  const displayValue = showPercentage ? `${Math.round((value / maxValue) * 100)}%` : label
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
@@ -48,12 +51,11 @@ export function CircularProgress({
           cy={size / 2}
         />
       </svg>
-      {label && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-4xl font-bold">{label}</span>
+      {displayValue && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-semibold">{displayValue}</span>
         </div>
       )}
     </div>
   )
 }
-

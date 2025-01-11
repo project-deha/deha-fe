@@ -1,32 +1,41 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
-import 'react-day-picker/dist/style.css';
-
+import React, { useState, useEffect } from 'react'
+import 'react-day-picker/dist/style.css'
+import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, CalendarIcon, MapPin, Activity, Check } from 'lucide-react'
+import { Search, CalendarIcon, MapPin, Activity, Check, X } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { CircularProgress } from '@/components/ui/circular-progress'
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
-
+import { CircularProgress } from '@/components/ui/circular-progress'
+// Türkiye şehirleri listesi
 const cities = [
-    "Adana", "Adıyaman", "Afyon", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "İçel (Mersin)", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
+    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın",
+    "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı",
+    "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir",
+    "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul",
+    "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya",
+    "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
+    "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
+    "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt",
+    "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük",
+    "Kilis", "Osmaniye", "Düzce"
 ]
 
-type CustomDateRange = {
-    from: Date | null;
-    to: Date | null;
-};
+interface CustomDateRange {
+    from: Date | null
+    to: Date | null
+}
 
 interface SearchBarProps {
-    onSearch: (params: { dateRange?: CustomDateRange, selectedCity?: string, magnitude?: number }) => void;
-    initialDateRange?: CustomDateRange;
-    initialCity?: string;
-    initialMagnitude?: number;
+    onSearch: (params: { dateRange?: CustomDateRange, selectedCity?: string, magnitude?: number }) => void
+    initialDateRange?: CustomDateRange
+    initialCity?: string
+    initialMagnitude?: number
 }
 
 export function SearchBar({
@@ -45,6 +54,7 @@ export function SearchBar({
     const [confirmedMonthCount, setConfirmedMonthCount] = useState(0)
     const [magnitude, setMagnitude] = useState(initialMagnitude)
     const [confirmedMagnitude, setConfirmedMagnitude] = useState(initialMagnitude)
+    const [isOpen, setIsOpen] = useState({ date: false, city: false, magnitude: false })
 
     useEffect(() => {
         setDateRange(initialDateRange)
@@ -73,183 +83,257 @@ export function SearchBar({
         }
         return "Tarih Seç"
     }
+    // Temizleme fonksiyonları
+    const clearDate = () => {
+        setDateRange(undefined)
+        setConfirmedDateRange(undefined)
+        setMonthCount(1)
+        setConfirmedMonthCount(0)
+        setDateType('days')
+        setIsOpen(prev => ({ ...prev, date: false }))
+        onSearch({
+            dateRange: undefined,
+            selectedCity: confirmedCity,
+            magnitude: confirmedMagnitude
+        })
+    }
+
+    const clearCity = () => {
+        setSelectedCity('')
+        setConfirmedCity('')
+        setCityInput('')
+        setIsOpen(prev => ({ ...prev, city: false }))
+        onSearch({
+            dateRange: confirmedDateRange,
+            selectedCity: undefined,
+            magnitude: confirmedMagnitude
+        })
+    }
+
+    const clearMagnitude = () => {
+        setMagnitude(0.0)
+        setConfirmedMagnitude(0.0)
+        setIsOpen(prev => ({ ...prev, magnitude: false }))
+        onSearch({
+            dateRange: confirmedDateRange,
+            selectedCity: confirmedCity,
+            magnitude: undefined
+        })
+    }
 
     return (
-        <div className="flex items-center w-full max-w-4xl gap-4 p-2 bg-white border border-gray-300 rounded-lg shadow-lg">
+        <div className="flex items-center w-full max-w-4xl gap-4 p-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-lg">
             {/* Tarih Seçimi */}
-            <Popover>
+            <Popover open={isOpen.date} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, date: open }))}>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal bg-gray-50 hover:bg-gray-100 py-2">
-                        <CalendarIcon className="mr-2 h-5 w-5 text-black" />
+                    <Button
+                        variant="outline"
+                        className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
+                            confirmedDateRange && "text-primary border-primary"
+                        )}
+                    >
+                        <CalendarIcon className="mr-2 h-5 w-5" />
                         {getDateRangeText()}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[480px] p-0" align="start">
-                    <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
+                <PopoverContent className="w-auto p-0" align="start">
+                    <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg mb-1">Tarih Aralığı Seçin</h3>
-                            <p className="text-sm text-gray-600">Deprem verilerini görüntülemek istediğiniz tarih aralığını veya ay sayısını seçin.</p>
+                            <h3 className="font-semibold text-lg">Tarih Aralığı</h3>
+                            <p className="text-sm text-muted-foreground">Deprem tahminleri için tarih aralığı seçin.</p>
                         </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={clearDate}
+                            className="h-8 w-8"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
                     </div>
-                    <Tabs defaultValue={dateType} onValueChange={(value) => setDateType(value as 'days' | 'months')}>
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="days">Günler</TabsTrigger>
-                            <TabsTrigger value="months">Aylar</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="days" className="p-0">
-                            <Calendar
-                                mode="range"
-                                defaultMonth={dateRange?.from || undefined}
-                                selected={dateRange as any}
-                                onSelect={(range) => {
-                                    if (range?.from || range?.to) {
-                                        setDateRange({ from: range.from || null, to: range.to || null });
-                                    }
-                                }}
-                                numberOfMonths={1}
-                                locale={tr}
-                            />
-                        </TabsContent>
-                        <TabsContent value="months" className="p-4">
-                            <div className="flex flex-col items-center">
-                                <CircularProgress
-                                    value={monthCount}
-                                    maxValue={12}
-                                    label={`${monthCount} ay`}
-                                    size={120}
-                                    className="mb-4"
-                                />
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="12"
-                                    value={monthCount}
-                                    onChange={(e) => setMonthCount(parseInt(e.target.value))}
-                                    className="w-full"
-                                />
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                    <div className="p-4 bg-gray-100 border-t">
+                    <div className="p-4">
+                        <Calendar
+                            mode="range"
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={1}
+                            locale={tr}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
                             onClick={() => {
-                                if (dateType === 'days') {
-                                    setConfirmedDateRange(dateRange);
-                                    setConfirmedMonthCount(0);
-                                } else {
-                                    setConfirmedDateRange(undefined);
-                                    setConfirmedMonthCount(monthCount);
-                                }
+                                setConfirmedDateRange(dateRange)
+                                setIsOpen(prev => ({ ...prev, date: false }))
+                                onSearch({
+                                    dateRange: dateRange || undefined,
+                                    selectedCity: confirmedCity,
+                                    magnitude: confirmedMagnitude
+                                })
                             }}
                         >
-                            <Check className="mr-2 h-4 w-4" /> Onayla
+                            <Check className="mr-2 h-4 w-4" />
+                            Onayla
                         </Button>
                     </div>
                 </PopoverContent>
             </Popover>
 
             {/* Şehir Seçimi */}
-            <Popover>
+            <Popover open={isOpen.city} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, city: open }))}>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal bg-gray-50 hover:bg-gray-100 py-2">
-                        <MapPin className="mr-2 h-5 w-5 text-black" />
-                        {confirmedCity || 'Şehir Seç'}
+                    <Button
+                        variant="outline"
+                        className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
+                            confirmedCity && "text-primary border-primary"
+                        )}
+                    >
+                        <MapPin className="mr-2 h-5 w-5" />
+                        {confirmedCity || "Şehir Seç"}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[320px] p-4">
-                    <div className="mb-4 flex justify-between items-center">
+                <PopoverContent className="w-[280px] p-0">
+                    <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg mb-1">Şehir Seçin</h3>
-                            <p className="text-sm text-gray-600">Deprem verilerini görüntülemek istediğiniz şehri seçin veya arayın.</p>
+                            <h3 className="font-semibold text-lg">Şehir Seçimi</h3>
+                            <p className="text-sm text-muted-foreground">Deprem tahminleri için şehir seçin.</p>
                         </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={clearCity}
+                            className="h-8 w-8"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
                     </div>
-                    <div className="flex flex-col space-y-2">
+                    <div className="p-4 pt-2">
                         <Input
                             placeholder="Şehir ara..."
                             value={cityInput}
                             onChange={(e) => setCityInput(e.target.value)}
-                            className="bg-gray-50"
+                            className="mb-2"
                         />
-                        <div className="max-h-40 overflow-y-auto mb-4">
+                        <div className="max-h-[200px] overflow-y-auto space-y-1">
                             {cities
-                                .filter((city) =>
+                                .filter(city =>
                                     city.toLowerCase().includes(cityInput.toLowerCase())
                                 )
-                                .map((city) => (
-                                    <div
+                                .map(city => (
+                                    <Button
                                         key={city}
-                                        className="p-2 cursor-pointer hover:bg-gray-100 rounded-md"
-                                        onClick={() => {
-                                            setSelectedCity(city);
-                                            setCityInput('');
-                                        }}
+                                        variant="ghost"
+                                        className={cn(
+                                            "w-full justify-start font-normal",
+                                            selectedCity === city && "bg-primary/10"
+                                        )}
+                                        onClick={() => setSelectedCity(city)}
                                     >
                                         {city}
-                                    </div>
-                                ))}
+                                    </Button>
+                                ))
+                            }
                         </div>
+                    </div>
+                    <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={() => { setConfirmedCity(selectedCity) }}
+                            onClick={() => {
+                                setConfirmedCity(selectedCity)
+                                setIsOpen(prev => ({ ...prev, city: false }))
+                                onSearch({
+                                    dateRange: confirmedDateRange,
+                                    selectedCity: selectedCity || undefined,
+                                    magnitude: confirmedMagnitude
+                                })
+                            }}
                         >
-                            <Check className="mr-2 h-4 w-4" /> Onayla
+                            <Check className="mr-2 h-4 w-4" />
+                            Onayla
                         </Button>
                     </div>
                 </PopoverContent>
             </Popover>
 
             {/* Büyüklük Seçimi */}
-            <Popover>
+            <Popover open={isOpen.magnitude} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, magnitude: open }))}>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal bg-gray-50 hover:bg-gray-100 py-2">
-                        <Activity className="mr-2 h-5 w-5 text-black" />
+                    <Button
+                        variant="outline"
+                        className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
+                            confirmedMagnitude > 0 && "text-primary border-primary"
+                        )}
+                    >
+                        <Activity className="mr-2 h-5 w-5" />
                         Büyüklük: {confirmedMagnitude.toFixed(1)}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[320px]">
-                    <div className="mb-4 flex justify-between items-center">
+                <PopoverContent className="w-[280px] p-0">
+                    <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg mb-1">Deprem Büyüklüğü</h3>
-                            <p className="text-sm text-gray-600">Görmek istediğiniz minimum deprem büyüklüğünü seçin.</p>
+                            <h3 className="font-semibold text-lg">Deprem Büyüklüğü</h3>
+                            <p className="text-sm text-muted-foreground">Minimum deprem büyüklüğünü seçin.</p>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={clearMagnitude}
+                            className="h-8 w-8"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <div className="p-4 pt-2">
+                        <div className="flex flex-col items-center gap-4">
+                            <CircularProgress
+                                value={magnitude}
+                                maxValue={10}
+                                label={magnitude.toFixed(1)}
+                                size={120}
+                                strokeWidth={12}
+                            />
+                            <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                value={magnitude}
+                                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                                className="w-full"
+                            />
                         </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                        <CircularProgress
-                            value={magnitude}
-                            maxValue={10}
-                            label={magnitude.toFixed(1)}
-                            size={120}
-                            className="mb-4"
-                        />
-                        <input
-                            type="range"
-                            min="0"
-                            max="10"
-                            step="0.1"
-                            value={magnitude}
-                            onChange={(e) => setMagnitude(parseFloat(e.target.value))}
-                            className="w-full mb-4"
-                        />
+                    <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
-                            onClick={() => { setConfirmedMagnitude(magnitude) }}
+                            onClick={() => {
+                                setConfirmedMagnitude(magnitude)
+                                setIsOpen(prev => ({ ...prev, magnitude: false }))
+                                onSearch({
+                                    dateRange: confirmedDateRange,
+                                    selectedCity: confirmedCity,
+                                    magnitude: magnitude || undefined
+                                })
+                            }}
                         >
-                            <Check className="mr-2 h-4 w-4" /> Onayla
+                            <Check className="mr-2 h-4 w-4" />
+                            Onayla
                         </Button>
                     </div>
                 </PopoverContent>
             </Popover>
 
             {/* Arama Butonu */}
-            <Button
-                type="button"
-                className="w-auto px-4 py-2 text-white bg-black rounded-lg hover:bg-gray-800"
-                onClick={handleSearch}
-            >
-                <Search className="h-5 w-5" />
+            <Button onClick={handleSearch} size="icon" className="h-10 w-10">
+                <Search className="h-4 w-4" />
             </Button>
         </div>
     )
 }
-
