@@ -21,9 +21,9 @@ interface SearchContextType {
 const SearchContext = createContext<SearchContextType | undefined>(undefined)
 
 export function SearchProvider({ children }: { children: ReactNode }) {
-    const [dateRange, setDateRange] = useState<CustomDateRange | undefined>()
-    const [selectedCity, setSelectedCity] = useState<string>()
-    const [magnitude, setMagnitude] = useState<number>()
+    const [dateRange, setDateRange] = useState<CustomDateRange | undefined>({ from: null, to: null })
+    const [selectedCity, setSelectedCity] = useState<string>('')
+    const [magnitude, setMagnitude] = useState<number>(0)
     const [isSearched, setIsSearched] = useState(false)
 
     return (
