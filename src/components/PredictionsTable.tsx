@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
     Table,
@@ -18,8 +18,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useAtomValue, useSetAtom } from 'jotai'
-import { predictionsAtom } from '@/store/predictions'
 import axios from 'axios'
 
 type CustomDateRange = {
@@ -48,6 +46,7 @@ interface PredictedEarthquakeDto {
     latitude?: number
     longitude?: number
     city?: string
+    predictionDate: string
 }
 
 type SortConfig = {
@@ -64,11 +63,35 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
         key: 'magnitude',
         direction: 'desc'
     })
+    const [predictions, setPredictions] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
 
-    const predictions = useAtomValue(predictionsAtom)
-    const setPredictions = useSetAtom(predictionsAtom)
+    useEffect(() => {
+        fetchPredictions(currentPage)
+    }, [currentPage, dateRange, selectedCity, magnitude])
 
-    if (!predictions || !predictions.content) {
+    const fetchPredictions = async (page: number) => {
+        try {
+            setLoading(true)
+            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
+                minMagnitude: magnitude || 0,
+                maxMagnitude: 10,
+                city: selectedCity ? selectedCity : null,
+                startDate: dateRange?.from ? new Date(dateRange.from).toISOString() : null,
+                endDate: dateRange?.to ? new Date(dateRange.to).toISOString() : null,
+                page: page - 1,
+                size: itemsPerPage
+            })
+
+            setPredictions(response.data)
+        } catch (error) {
+            console.error('Error fetching predictions:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    if (loading || !predictions) {
         return (
             <div className="rounded-md border bg-white p-8 text-center">
                 <p className="text-gray-500">Loading predictions...</p>
@@ -87,7 +110,7 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
     const sortedData = [...predictions.content].sort((a, b) => {
         if (!sortConfig.key) return 0
         if (sortConfig.key === 'city') {
-            return sortConfig.direction === 'asc' 
+            return sortConfig.direction === 'asc'
                 ? a.location.city.localeCompare(b.location.city)
                 : b.location.city.localeCompare(a.location.city)
         }
@@ -122,23 +145,8 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
             <ChevronDown className="inline h-4 w-4" />
     }
 
-    const handlePageChange = async (newPage: number) => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
-                minMagnitude: magnitude || 0,
-                maxMagnitude: 10,
-                city: selectedCity ? selectedCity : null,
-                startDate: dateRange?.from ? new Date(dateRange.from).toISOString() : null,
-                endDate: dateRange?.to ? new Date(dateRange.to).toISOString() : null,
-                page: newPage - 1,
-                size: itemsPerPage
-            })
-            
-            setPredictions(response.data)
-            setCurrentPage(newPage)
-        } catch (error) {
-            console.error('Error changing page:', error)
-        }
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage)
     }
 
     return (
@@ -152,6 +160,7 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
                         <TableHead>{renderSortableHeader('Büyüklük', 'magnitude')}</TableHead>
                         <TableHead>{renderSortableHeader('Şehir', 'city')}</TableHead>
                         <TableHead>{renderSortableHeader('Olasılık', 'possibility')}</TableHead>
+                        <TableHead>{renderSortableHeader('Tarih', 'predictionDate')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="bg-sky-50">
@@ -163,6 +172,7 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
                             <TableCell>{prediction.magnitude.toFixed(1)}</TableCell>
                             <TableCell>{prediction.location.city}</TableCell>
                             <TableCell>%{(prediction.possibility * 100).toFixed(1)}</TableCell>
+                            <TableCell>{new Date(prediction.predictionDate).toLocaleDateString()}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

@@ -71,28 +71,6 @@ export function SearchBar({
         setConfirmedMagnitude(initialMagnitude)
     }, [initialDateRange, initialCity, initialMagnitude])
 
-    useEffect(() => {
-        const fetchInitialPredictions = async () => {
-            try {
-                const response = await axios.post(`${API_BASE_URL}/api/v1/predicted-earthquake/filter`, {
-                    minMagnitude: 0,
-                    maxMagnitude: 10,
-                    city: null,
-                    startDate: null,
-                    endDate: null,
-                    page: 0,
-                    size: 8
-                })
-                
-                setPredictions(response.data)
-            } catch (error) {
-                console.error('Error fetching initial predictions:', error)
-            }
-        }
-
-        fetchInitialPredictions()
-    }, [setPredictions])
-
     const fetchPredictions = async (params: {
         dateRange?: CustomDateRange,
         selectedCity?: string,
@@ -109,7 +87,7 @@ export function SearchBar({
                 page: params.page || 0,
                 size: 20
             })
-            
+
             setPredictions(response.data)
         } catch (error) {
             console.error('Error fetching predictions:', error)
@@ -122,7 +100,7 @@ export function SearchBar({
             selectedCity: confirmedCity,
             magnitude: confirmedMagnitude
         }
-        
+
         await fetchPredictions(searchParams)
         onSearch(searchParams)
     }
@@ -145,7 +123,7 @@ export function SearchBar({
         setConfirmedMonthCount(0)
         setDateType('days')
         setIsOpen(prev => ({ ...prev, date: false }))
-        
+
         const params = {
             selectedCity: confirmedCity,
             magnitude: confirmedMagnitude
@@ -159,7 +137,7 @@ export function SearchBar({
         setConfirmedCity('')
         setCityInput('')
         setIsOpen(prev => ({ ...prev, city: false }))
-        
+
         const params = {
             dateRange: confirmedDateRange,
             magnitude: confirmedMagnitude
@@ -172,7 +150,7 @@ export function SearchBar({
         setMagnitude(0.0)
         setConfirmedMagnitude(0.0)
         setIsOpen(prev => ({ ...prev, magnitude: false }))
-        
+
         const params = {
             dateRange: confirmedDateRange,
             selectedCity: confirmedCity
