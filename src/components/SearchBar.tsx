@@ -1,170 +1,270 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import 'react-day-picker/dist/style.css'
-import { cn } from "@/lib/utils"
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Search, CalendarIcon, MapPin, Activity, Check, X } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Calendar } from '@/components/ui/calendar'
-import { format } from 'date-fns'
-import { tr } from 'date-fns/locale'
-import { CircularProgress } from '@/components/ui/circular-progress'
-import { predictionsService } from '@/services/predictionsServices'
-import { useAtomValue, useSetAtom } from 'jotai'
-import { predictionsAtom } from '@/store/predictions'
-import { useSearch } from '@/contexts/SearchContext'
-import { isSearchAtom } from '@/store/isSearch'
+import React, { useState, useEffect } from 'react';
+import 'react-day-picker/dist/style.css';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search, CalendarIcon, MapPin, Activity, Check, X } from 'lucide-react';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { CircularProgress } from '@/components/ui/circular-progress';
+import { predictionsService } from '@/services/predictionsServices';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { predictionsAtom } from '@/store/predictions';
+import { useSearch } from '@/contexts/SearchContext';
+import { isSearchAtom } from '@/store/isSearch';
 
 // Türkiye şehirleri listesi
 const cities = [
-    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın",
-    "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı",
-    "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir",
-    "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul",
-    "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya",
-    "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
-    "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
-    "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt",
-    "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük",
-    "Kilis", "Osmaniye", "Düzce"
-]
+    'Adana',
+    'Adıyaman',
+    'Afyonkarahisar',
+    'Ağrı',
+    'Amasya',
+    'Ankara',
+    'Antalya',
+    'Artvin',
+    'Aydın',
+    'Balıkesir',
+    'Bilecik',
+    'Bingöl',
+    'Bitlis',
+    'Bolu',
+    'Burdur',
+    'Bursa',
+    'Çanakkale',
+    'Çankırı',
+    'Çorum',
+    'Denizli',
+    'Diyarbakır',
+    'Edirne',
+    'Elazığ',
+    'Erzincan',
+    'Erzurum',
+    'Eskişehir',
+    'Gaziantep',
+    'Giresun',
+    'Gümüşhane',
+    'Hakkari',
+    'Hatay',
+    'Isparta',
+    'Mersin',
+    'İstanbul',
+    'İzmir',
+    'Kars',
+    'Kastamonu',
+    'Kayseri',
+    'Kırklareli',
+    'Kırşehir',
+    'Kocaeli',
+    'Konya',
+    'Kütahya',
+    'Malatya',
+    'Manisa',
+    'Kahramanmaraş',
+    'Mardin',
+    'Muğla',
+    'Muş',
+    'Nevşehir',
+    'Niğde',
+    'Ordu',
+    'Rize',
+    'Sakarya',
+    'Samsun',
+    'Siirt',
+    'Sinop',
+    'Sivas',
+    'Tekirdağ',
+    'Tokat',
+    'Trabzon',
+    'Tunceli',
+    'Şanlıurfa',
+    'Uşak',
+    'Van',
+    'Yozgat',
+    'Zonguldak',
+    'Aksaray',
+    'Bayburt',
+    'Karaman',
+    'Kırıkkale',
+    'Batman',
+    'Şırnak',
+    'Bartın',
+    'Ardahan',
+    'Iğdır',
+    'Yalova',
+    'Karabük',
+    'Kilis',
+    'Osmaniye',
+    'Düzce',
+];
 
 interface CustomDateRange {
-    from: Date | null
-    to: Date | null
+    from: Date | null;
+    to: Date | null;
 }
 
 interface SearchBarProps {
-    onSearch: (params: { dateRange?: CustomDateRange, selectedCity?: string, magnitude?: number }) => void
-    initialDateRange?: CustomDateRange
-    initialCity?: string
-    initialMagnitude?: number
+    onSearch: (params: {
+        dateRange?: CustomDateRange;
+        selectedCity?: string;
+        magnitude?: number;
+    }) => void;
+    initialDateRange?: CustomDateRange;
+    initialCity?: string;
+    initialMagnitude?: number;
 }
 
 export function SearchBar({
     onSearch,
     initialDateRange,
     initialCity,
-    initialMagnitude = 0.0
+    initialMagnitude = 0.0,
 }: SearchBarProps) {
-    const [dateType, setDateType] = useState<'days' | 'months'>('days')
+    const [dateType, setDateType] = useState<'days' | 'months'>('days');
     //const [dateRange, setDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
-    const [confirmedDateRange, setConfirmedDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
+    const [confirmedDateRange, setConfirmedDateRange] = useState<
+        CustomDateRange | undefined
+    >(initialDateRange);
     //const [selectedCity, setSelectedCity] = useState<string>(initialCity || '')
-    const [confirmedCity, setConfirmedCity] = useState<string>(initialCity || '')
-    const [cityInput, setCityInput] = useState<string>('')
-    const [monthCount, setMonthCount] = useState(1)
-    const [confirmedMonthCount, setConfirmedMonthCount] = useState(0)
+    const [confirmedCity, setConfirmedCity] = useState<string>(
+        initialCity || ''
+    );
+    const [cityInput, setCityInput] = useState<string>('');
+    const [monthCount, setMonthCount] = useState(1);
+    const [confirmedMonthCount, setConfirmedMonthCount] = useState(0);
     //const [magnitude, setMagnitude] = useState(initialMagnitude)
-    const [confirmedMagnitude, setConfirmedMagnitude] = useState(initialMagnitude)
-    const [isOpen, setIsOpen] = useState({ date: false, city: false, magnitude: false })
+    const [confirmedMagnitude, setConfirmedMagnitude] =
+        useState(initialMagnitude);
+    const [isOpen, setIsOpen] = useState({
+        date: false,
+        city: false,
+        magnitude: false,
+    });
 
-    const { dateRange, selectedCity, magnitude, setDateRange, setSelectedCity, setMagnitude } = useSearch()
-    const setPredictions = useSetAtom(predictionsAtom)
+    const {
+        dateRange,
+        selectedCity,
+        magnitude,
+        setDateRange,
+        setSelectedCity,
+        setMagnitude,
+    } = useSearch();
+    const setPredictions = useSetAtom(predictionsAtom);
     const setIsSearch = useSetAtom(isSearchAtom);
 
     useEffect(() => {
-        setDateRange(initialDateRange)
-        setConfirmedDateRange(initialDateRange)
-        setSelectedCity(initialCity || '')
-        setConfirmedCity(initialCity || '')
-        setMagnitude(initialMagnitude)
-        setConfirmedMagnitude(initialMagnitude)
-    }, [initialDateRange, initialCity, initialMagnitude])
+        setDateRange(initialDateRange);
+        setConfirmedDateRange(initialDateRange);
+        setSelectedCity(initialCity || '');
+        setConfirmedCity(initialCity || '');
+        setMagnitude(initialMagnitude);
+        setConfirmedMagnitude(initialMagnitude);
+    }, [initialDateRange, initialCity, initialMagnitude]);
 
     const fetchPredictions = async (params: {
-        dateRange?: CustomDateRange,
-        selectedCity?: string,
-        magnitude?: number,
-        page?: number
+        dateRange?: CustomDateRange;
+        selectedCity?: string;
+        magnitude?: number;
+        page?: number;
     }) => {
         try {
             const data = await predictionsService.filterPredictions(params);
-            setPredictions(data)
+            setPredictions(data);
         } catch (error) {
-            console.error('Error fetching predictions:', error)
+            console.error('Error fetching predictions:', error);
         }
-    }
+    };
 
     const handleSearch = async () => {
         const searchParams = {
             dateRange: confirmedDateRange,
             selectedCity: confirmedCity,
-            magnitude: confirmedMagnitude
-        }
+            magnitude: confirmedMagnitude,
+        };
 
-        await fetchPredictions(searchParams)
-        onSearch(searchParams)
-    }
+        await fetchPredictions(searchParams);
+        onSearch(searchParams);
+    };
 
     const getDateRangeText = () => {
         if (dateType === 'days' && confirmedDateRange?.from) {
             return confirmedDateRange.to
-                ? `${format(confirmedDateRange.from, "d LLL", { locale: tr })} - ${format(confirmedDateRange.to, "d LLL", { locale: tr })}`
-                : format(confirmedDateRange.from, "d LLL", { locale: tr })
+                ? `${format(confirmedDateRange.from, 'd LLL', { locale: tr })} - ${format(confirmedDateRange.to, 'd LLL', { locale: tr })}`
+                : format(confirmedDateRange.from, 'd LLL', { locale: tr });
         } else if (dateType === 'months' && confirmedMonthCount > 0) {
-            return `${confirmedMonthCount} Ay`
+            return `${confirmedMonthCount} Ay`;
         }
-        return "Tarih Seç"
-    }
+        return 'Tarih Seç';
+    };
     // Temizleme fonksiyonları
     const clearDate = async () => {
-        setDateRange(undefined)
-        setConfirmedDateRange(undefined)
-        setMonthCount(1)
-        setConfirmedMonthCount(0)
-        setDateType('days')
-        setIsOpen(prev => ({ ...prev, date: false }))
+        setDateRange(undefined);
+        setConfirmedDateRange(undefined);
+        setMonthCount(1);
+        setConfirmedMonthCount(0);
+        setDateType('days');
+        setIsOpen((prev) => ({ ...prev, date: false }));
 
         const params = {
             selectedCity: confirmedCity,
-            magnitude: confirmedMagnitude
-        }
+            magnitude: confirmedMagnitude,
+        };
         //await fetchPredictions(params)
-        onSearch(params)
-    }
+        onSearch(params);
+    };
 
     const clearCity = async () => {
-        setSelectedCity('')
-        setConfirmedCity('')
-        setCityInput('')
-        setIsOpen(prev => ({ ...prev, city: false }))
+        setSelectedCity('');
+        setConfirmedCity('');
+        setCityInput('');
+        setIsOpen((prev) => ({ ...prev, city: false }));
 
         const params = {
             dateRange: confirmedDateRange,
             magnitude: confirmedMagnitude,
-        }
+        };
         //await fetchPredictions(params)
-        onSearch(params)
-    }
+        onSearch(params);
+    };
 
     const clearMagnitude = async () => {
-        setMagnitude(0.0)
-        setConfirmedMagnitude(0.0)
-        setIsOpen(prev => ({ ...prev, magnitude: false }))
+        setMagnitude(0.0);
+        setConfirmedMagnitude(0.0);
+        setIsOpen((prev) => ({ ...prev, magnitude: false }));
 
         const params = {
             dateRange: confirmedDateRange,
-            selectedCity: confirmedCity
-        }
+            selectedCity: confirmedCity,
+        };
         //await fetchPredictions(params)
-        onSearch(params)
-    }
+        onSearch(params);
+    };
 
     return (
         <div className="flex items-center w-full max-w-4xl gap-4 p-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-lg">
             {/* Tarih Seçimi */}
-            <Popover open={isOpen.date} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, date: open }))}>
+            <Popover
+                open={isOpen.date}
+                onOpenChange={(open) =>
+                    setIsOpen((prev) => ({ ...prev, date: open }))
+                }
+            >
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
                         className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
-                            confirmedDateRange && "text-primary border-primary"
+                            'flex-1 justify-start text-left font-normal',
+                            'hover:bg-gray-50 active:scale-[0.98] transition-all',
+                            confirmedDateRange && 'text-primary border-primary'
                         )}
                     >
                         <CalendarIcon className="mr-2 h-5 w-5" />
@@ -174,8 +274,12 @@ export function SearchBar({
                 <PopoverContent className="w-auto p-0" align="start">
                     <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg">Tarih Aralığı</h3>
-                            <p className="text-sm text-muted-foreground">Deprem tahminleri için tarih aralığı seçin.</p>
+                            <h3 className="font-semibold text-lg">
+                                Tarih Aralığı
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Deprem tahminleri için tarih aralığı seçin.
+                            </p>
                         </div>
                         <Button
                             variant="ghost"
@@ -191,16 +295,16 @@ export function SearchBar({
                             mode="range"
                             selected={{
                                 from: dateRange?.from || undefined,
-                                to: dateRange?.to || undefined
+                                to: dateRange?.to || undefined,
                             }}
                             onSelect={(range) => {
                                 if (range) {
                                     setDateRange({
                                         from: range.from || null,
-                                        to: range.to || null
-                                    })
+                                        to: range.to || null,
+                                    });
                                 } else {
-                                    setDateRange(undefined)
+                                    setDateRange(undefined);
                                 }
                             }}
                             numberOfMonths={1}
@@ -211,16 +315,16 @@ export function SearchBar({
                         <Button
                             className="w-full"
                             onClick={async () => {
-                                setConfirmedDateRange(dateRange)
-                                setIsOpen(prev => ({ ...prev, date: false }))
+                                setConfirmedDateRange(dateRange);
+                                setIsOpen((prev) => ({ ...prev, date: false }));
                                 const params = {
                                     dateRange: dateRange || undefined,
                                     selectedCity: confirmedCity,
-                                    magnitude: confirmedMagnitude
-                                }
-                               //await fetchPredictions(params)
-                                onSearch(params)
-                                setIsSearch(true)
+                                    magnitude: confirmedMagnitude,
+                                };
+                                //await fetchPredictions(params)
+                                onSearch(params);
+                                setIsSearch(true);
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -231,25 +335,34 @@ export function SearchBar({
             </Popover>
 
             {/* Şehir Seçimi */}
-            <Popover open={isOpen.city} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, city: open }))}>
+            <Popover
+                open={isOpen.city}
+                onOpenChange={(open) =>
+                    setIsOpen((prev) => ({ ...prev, city: open }))
+                }
+            >
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
                         className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
-                            confirmedCity && "text-primary border-primary"
+                            'flex-1 justify-start text-left font-normal',
+                            'hover:bg-gray-50 active:scale-[0.98] transition-all',
+                            confirmedCity && 'text-primary border-primary'
                         )}
                     >
                         <MapPin className="mr-2 h-5 w-5" />
-                        {confirmedCity || "Şehir Seç"}
+                        {confirmedCity || 'Şehir Seç'}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[280px] p-0">
                     <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg">Şehir Seçimi</h3>
-                            <p className="text-sm text-muted-foreground">Deprem tahminleri için şehir seçin.</p>
+                            <h3 className="font-semibold text-lg">
+                                Şehir Seçimi
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Deprem tahminleri için şehir seçin.
+                            </p>
                         </div>
                         <Button
                             variant="ghost"
@@ -269,39 +382,41 @@ export function SearchBar({
                         />
                         <div className="max-h-[200px] overflow-y-auto space-y-1">
                             {cities
-                                .filter(city =>
-                                    city.toLowerCase().includes(cityInput.toLowerCase())
+                                .filter((city) =>
+                                    city
+                                        .toLowerCase()
+                                        .includes(cityInput.toLowerCase())
                                 )
-                                .map(city => (
+                                .map((city) => (
                                     <Button
                                         key={city}
                                         variant="ghost"
                                         className={cn(
-                                            "w-full justify-start font-normal",
-                                            selectedCity === city && "bg-primary/10"
+                                            'w-full justify-start font-normal',
+                                            selectedCity === city &&
+                                                'bg-primary/10'
                                         )}
                                         onClick={() => setSelectedCity(city)}
                                     >
                                         {city}
                                     </Button>
-                                ))
-                            }
+                                ))}
                         </div>
                     </div>
                     <div className="flex items-center gap-2 p-4 bg-gray-50 border-t">
                         <Button
                             className="w-full"
                             onClick={async () => {
-                                setConfirmedCity(selectedCity)
-                                setIsOpen(prev => ({ ...prev, city: false }))
+                                setConfirmedCity(selectedCity);
+                                setIsOpen((prev) => ({ ...prev, city: false }));
                                 const params = {
                                     dateRange: confirmedDateRange,
                                     selectedCity: selectedCity || undefined,
-                                    magnitude: confirmedMagnitude
-                                }
+                                    magnitude: confirmedMagnitude,
+                                };
                                 //await fetchPredictions(params)
-                                onSearch(params)
-                                setIsSearch(true)
+                                onSearch(params);
+                                setIsSearch(true);
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -312,14 +427,20 @@ export function SearchBar({
             </Popover>
 
             {/* Büyüklük Seçimi */}
-            <Popover open={isOpen.magnitude} onOpenChange={(open) => setIsOpen(prev => ({ ...prev, magnitude: open }))}>
+            <Popover
+                open={isOpen.magnitude}
+                onOpenChange={(open) =>
+                    setIsOpen((prev) => ({ ...prev, magnitude: open }))
+                }
+            >
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
                         className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            "hover:bg-gray-50 active:scale-[0.98] transition-all",
-                            confirmedMagnitude > 0 && "text-primary border-primary"
+                            'flex-1 justify-start text-left font-normal',
+                            'hover:bg-gray-50 active:scale-[0.98] transition-all',
+                            confirmedMagnitude > 0 &&
+                                'text-primary border-primary'
                         )}
                     >
                         <Activity className="mr-2 h-5 w-5" />
@@ -329,8 +450,12 @@ export function SearchBar({
                 <PopoverContent className="w-[280px] p-0">
                     <div className="p-4 pb-2 flex justify-between items-center">
                         <div>
-                            <h3 className="font-semibold text-lg">Deprem Büyüklüğü</h3>
-                            <p className="text-sm text-muted-foreground">Minimum deprem büyüklüğünü seçin.</p>
+                            <h3 className="font-semibold text-lg">
+                                Deprem Büyüklüğü
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Minimum deprem büyüklüğünü seçin.
+                            </p>
                         </div>
                         <Button
                             variant="ghost"
@@ -356,7 +481,11 @@ export function SearchBar({
                                 max="10"
                                 step="0.1"
                                 value={confirmedMagnitude}
-                                onChange={(e) => setConfirmedMagnitude(parseFloat(e.target.value))}
+                                onChange={(e) =>
+                                    setConfirmedMagnitude(
+                                        parseFloat(e.target.value)
+                                    )
+                                }
                                 className="w-full"
                             />
                         </div>
@@ -365,15 +494,18 @@ export function SearchBar({
                         <Button
                             className="w-full"
                             onClick={() => {
-                                setMagnitude(confirmedMagnitude)
-                                setIsOpen(prev => ({ ...prev, magnitude: false }))
+                                setMagnitude(confirmedMagnitude);
+                                setIsOpen((prev) => ({
+                                    ...prev,
+                                    magnitude: false,
+                                }));
                                 const params = {
                                     dateRange: confirmedDateRange,
                                     selectedCity: confirmedCity,
-                                    magnitude: confirmedMagnitude || undefined
-                                }
-                                onSearch(params)
-                                setIsSearch(true)
+                                    magnitude: confirmedMagnitude || undefined,
+                                };
+                                onSearch(params);
+                                setIsSearch(true);
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -383,5 +515,5 @@ export function SearchBar({
                 </PopoverContent>
             </Popover>
         </div>
-    )
+    );
 }

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Dialog,
     DialogContent,
@@ -10,47 +10,58 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 
 interface SignUpFormData {
-    name: string
-    email: string
-    password: string
-    confirmPassword: string
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
 }
 
-export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; onClose: () => void; onSignUp: (data: SignUpFormData) => void }) {
+export function SignUpModal({
+    isOpen,
+    onClose,
+    onSignUp,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSignUp: (data: SignUpFormData) => void;
+}) {
     const [formData, setFormData] = useState<SignUpFormData>({
         name: '',
         email: '',
         password: '',
         confirmPassword: '',
-    })
-    const [errors, setErrors] = useState<Partial<SignUpFormData>>({})
+    });
+    const [errors, setErrors] = useState<Partial<SignUpFormData>>({});
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
-    }
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
     const validateForm = () => {
-        const newErrors: Partial<SignUpFormData> = {}
-        if (!formData.name) newErrors.name = 'İsim gereklidir'
-        if (!formData.email) newErrors.email = 'E-posta gereklidir'
-        else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Geçerli bir e-posta adresi giriniz'
-        if (!formData.password) newErrors.password = 'Şifre gereklidir'
-        else if (formData.password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalıdır'
-        if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Şifreler eşleşmiyor'
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
-    }
+        const newErrors: Partial<SignUpFormData> = {};
+        if (!formData.name) newErrors.name = 'İsim gereklidir';
+        if (!formData.email) newErrors.email = 'E-posta gereklidir';
+        else if (!/\S+@\S+\.\S+/.test(formData.email))
+            newErrors.email = 'Geçerli bir e-posta adresi giriniz';
+        if (!formData.password) newErrors.password = 'Şifre gereklidir';
+        else if (formData.password.length < 6)
+            newErrors.password = 'Şifre en az 6 karakter olmalıdır';
+        if (formData.password !== formData.confirmPassword)
+            newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
         if (validateForm()) {
-            onSignUp(formData)
+            onSignUp(formData);
         }
-    }
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -75,7 +86,11 @@ export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; on
                                 className="col-span-3"
                                 placeholder="Adınızı giriniz"
                             />
-                            {errors.name && <p className="text-red-500 text-sm col-start-2 col-span-3">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-red-500 text-sm col-start-2 col-span-3">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <label htmlFor="email" className="text-right">
@@ -90,7 +105,11 @@ export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; on
                                 placeholder="E-posta adresinizi giriniz"
                                 className="col-span-3"
                             />
-                            {errors.email && <p className="text-red-500 text-sm col-start-2 col-span-3">{errors.email}</p>}
+                            {errors.email && (
+                                <p className="text-red-500 text-sm col-start-2 col-span-3">
+                                    {errors.email}
+                                </p>
+                            )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <label htmlFor="password" className="text-right">
@@ -105,10 +124,17 @@ export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; on
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
-                            {errors.password && <p className="text-red-500 text-sm col-start-2 col-span-3">{errors.password}</p>}
+                            {errors.password && (
+                                <p className="text-red-500 text-sm col-start-2 col-span-3">
+                                    {errors.password}
+                                </p>
+                            )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <label htmlFor="confirmPassword" className="text-right">
+                            <label
+                                htmlFor="confirmPassword"
+                                className="text-right"
+                            >
                                 Şifre Tekrar
                             </label>
                             <Input
@@ -120,7 +146,11 @@ export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; on
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
-                            {errors.confirmPassword && <p className="text-red-500 text-sm col-start-2 col-span-3">{errors.confirmPassword}</p>}
+                            {errors.confirmPassword && (
+                                <p className="text-red-500 text-sm col-start-2 col-span-3">
+                                    {errors.confirmPassword}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <DialogFooter>
@@ -129,6 +159,5 @@ export function SignUpModal({ isOpen, onClose, onSignUp }: { isOpen: boolean; on
                 </form>
             </DialogContent>
         </Dialog>
-    )
+    );
 }
-

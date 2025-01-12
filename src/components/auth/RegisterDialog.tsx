@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 import {
     Form,
     FormControl,
@@ -15,16 +15,16 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-import { VerificationDialog } from './VerificationDialog'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { VerificationDialog } from './VerificationDialog';
 
-const API_HOST = 'http://localhost:8080'
+const API_HOST = 'http://localhost:8080';
 
 // Configure axios instance
 const api = axios.create({
@@ -32,26 +32,30 @@ const api = axios.create({
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
     },
     maxRedirects: 0,
     validateStatus: function (status) {
         return status >= 200 && status < 400;
-    }
+    },
 });
 
-const formSchema = z.object({
-    name: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
-    surname: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
-    email: z.string().email('Geçerli bir e-posta adresi giriniz'),
-    password: z.string().min(6, 'Şifre en az 6 karakter olmalıdır'),
-    confirmPassword: z.string(),
-    terms: z.boolean().refine(val => val === true, 'Koşulları kabul etmelisiniz'),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eşleşmiyor",
-    path: ["confirmPassword"],
-})
+const formSchema = z
+    .object({
+        name: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
+        surname: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
+        email: z.string().email('Geçerli bir e-posta adresi giriniz'),
+        password: z.string().min(6, 'Şifre en az 6 karakter olmalıdır'),
+        confirmPassword: z.string(),
+        terms: z
+            .boolean()
+            .refine((val) => val === true, 'Koşulları kabul etmelisiniz'),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: 'Şifreler eşleşmiyor',
+        path: ['confirmPassword'],
+    });
 
 // Add these interfaces for type safety
 interface UserDto {
@@ -73,11 +77,11 @@ export function RegisterDialog({
     isOpen,
     onClose,
 }: {
-    isOpen: boolean
-    onClose: () => void
+    isOpen: boolean;
+    onClose: () => void;
 }) {
-    const [showVerification, setShowVerification] = useState(false)
-    const [email, setEmail] = useState('')
+    const [showVerification, setShowVerification] = useState(false);
+    const [email, setEmail] = useState('');
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -89,40 +93,53 @@ export function RegisterDialog({
             confirmPassword: '',
             terms: false,
         },
-    })
+    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             // Registration request
-            const registerResponse = await api.post<GenericResponse<UserDto>>('/api/v1/auth/register', {
-                email: values.email,
-                firstName: values.name,
-                lastName: values.surname,
-                password: values.password
-            });
+            const registerResponse = await api.post<GenericResponse<UserDto>>(
+                '/api/v1/auth/register',
+                {
+                    email: values.email,
+                    firstName: values.name,
+                    lastName: values.surname,
+                    password: values.password,
+                }
+            );
 
             console.log('Kayıt başarılı:', registerResponse.data);
 
             // Immediate login request after successful registration
-            const loginResponse = await api.post('/api/v1/auth/login', {
-                email: values.email,
-                password: values.password
-            }, {
-                withCredentials: true,
-            });
+            const loginResponse = await api.post(
+                '/api/v1/auth/login',
+                {
+                    email: values.email,
+                    password: values.password,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
 
             // Log the cookies from response headers
-            console.log('Set-Cookie headers:', loginResponse.headers['set-cookie']);
+            console.log(
+                'Set-Cookie headers:',
+                loginResponse.headers['set-cookie']
+            );
 
             // Wait a bit longer to ensure cookie processing
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
 
             console.log('Giriş başarılı:', loginResponse.data);
             setEmail(values.email);
             setShowVerification(true);
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.error('İşlem hatası:', error.response?.data || error.message);
+                console.error(
+                    'İşlem hatası:',
+                    error.response?.data || error.message
+                );
                 // Log more details about the error
                 console.error('Response headers:', error.response?.headers);
                 console.error('Status:', error.response?.status);
@@ -137,10 +154,15 @@ export function RegisterDialog({
             <Dialog open={isOpen && !showVerification} onOpenChange={onClose}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-center text-xl font-bold">Kaydolun</DialogTitle>
+                        <DialogTitle className="text-center text-xl font-bold">
+                            Kaydolun
+                        </DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-4"
+                        >
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -150,7 +172,8 @@ export function RegisterDialog({
                                         <FormControl>
                                             <Input
                                                 placeholder="Adınız"
-                                                {...field} />
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -165,7 +188,8 @@ export function RegisterDialog({
                                         <FormControl>
                                             <Input
                                                 placeholder="Soyadınız"
-                                                {...field} />
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -180,7 +204,9 @@ export function RegisterDialog({
                                         <FormControl>
                                             <Input
                                                 placeholder="E-mail"
-                                                {...field} type="email" />
+                                                {...field}
+                                                type="email"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -193,9 +219,11 @@ export function RegisterDialog({
                                     <FormItem>
                                         <FormLabel>Şifre</FormLabel>
                                         <FormControl>
-                                            <Input {...field}
+                                            <Input
+                                                {...field}
                                                 type="password"
-                                                placeholder="Şifreniz" />
+                                                placeholder="Şifreniz"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -208,8 +236,11 @@ export function RegisterDialog({
                                     <FormItem>
                                         <FormLabel>Şifre (Tekrar)</FormLabel>
                                         <FormControl>
-                                            <Input {...field}
-                                                placeholder="Şifreniz" type="password" />
+                                            <Input
+                                                {...field}
+                                                placeholder="Şifreniz"
+                                                type="password"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -228,7 +259,9 @@ export function RegisterDialog({
                                         </FormControl>
                                         <div className="space-y-1 leading-none">
                                             <FormLabel>
-                                                DEHA'nın koşullarını, Gizlilik İlkesini ve Çerezler İlkesini kabul ediyorum.
+                                                DEHA'nın koşullarını, Gizlilik
+                                                İlkesini ve Çerezler İlkesini
+                                                kabul ediyorum.
                                             </FormLabel>
                                             <FormMessage />
                                         </div>
@@ -246,16 +279,15 @@ export function RegisterDialog({
             <VerificationDialog
                 isOpen={showVerification}
                 onClose={() => {
-                    setShowVerification(false)
-                    onClose()
+                    setShowVerification(false);
+                    onClose();
                 }}
                 email={email}
                 onVerificationComplete={() => {
-                    setShowVerification(false)
-                    onClose()
+                    setShowVerification(false);
+                    onClose();
                 }}
             />
         </>
-    )
+    );
 }
-

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
 export function Footer() {
     return (
@@ -12,9 +12,11 @@ export function Footer() {
                     </div>
                     <nav>
                         <ul className="flex space-x-4">
-
                             <li>
-                                <Link href="/contact" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+                                <Link
+                                    href="/contact"
+                                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                >
                                     İletişim
                                 </Link>
                             </li>
@@ -23,6 +25,5 @@ export function Footer() {
                 </div>
             </div>
         </footer>
-    )
+    );
 }
-

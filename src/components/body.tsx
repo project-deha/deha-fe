@@ -1,96 +1,109 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
-import 'leaflet/dist/leaflet.css'
-import { useSearch } from '@/contexts/SearchContext'
-import { Button } from '@/components/ui/button'
-import CustomMarker from './CustomMarker'
-import { staticEarthquakePredictions, EarthquakePrediction } from '@/data/staticEarthquakePredictions'
-import { cityCoordinates } from '@/data/cityCoordinates'
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import 'leaflet/dist/leaflet.css';
+import { useSearch } from '@/contexts/SearchContext';
+import { Button } from '@/components/ui/button';
+import CustomMarker from './CustomMarker';
+import {
+    staticEarthquakePredictions,
+    EarthquakePrediction,
+} from '@/data/staticEarthquakePredictions';
+import { cityCoordinates } from '@/data/cityCoordinates';
 
 const MapContainer = dynamic(
     () => import('react-leaflet').then((mod) => mod.MapContainer),
     { ssr: false }
-)
+);
 const TileLayer = dynamic(
     () => import('react-leaflet').then((mod) => mod.TileLayer),
     { ssr: false }
-)
+);
 const Marker = dynamic(
     () => import('react-leaflet').then((mod) => mod.Marker),
     { ssr: false }
-)
-const Popup = dynamic(
-    () => import('react-leaflet').then((mod) => mod.Popup),
-    { ssr: false }
-)
+);
+const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
+    ssr: false,
+});
 
 export function Body() {
-    const [isMounted, setIsMounted] = useState(false)
-    const { dateRange, selectedCity, magnitude, isSearched } = useSearch()
-    const [mapCenter, setMapCenter] = useState<[number, number]>([39.9334, 32.8597])
-    const [mapZoom, setMapZoom] = useState(6)
-    const [filteredPredictions, setFilteredPredictions] = useState<EarthquakePrediction[]>([])
-    const router = useRouter()
+    const [isMounted, setIsMounted] = useState(false);
+    const { dateRange, selectedCity, magnitude, isSearched } = useSearch();
+    const [mapCenter, setMapCenter] = useState<[number, number]>([
+        39.9334, 32.8597,
+    ]);
+    const [mapZoom, setMapZoom] = useState(6);
+    const [filteredPredictions, setFilteredPredictions] = useState<
+        EarthquakePrediction[]
+    >([]);
+    const router = useRouter();
 
     useEffect(() => {
-        setIsMounted(true)
-    }, [])
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
         if (selectedCity) {
-            const cityName = selectedCity.split(',')[0]
+            const cityName = selectedCity.split(',')[0];
             if (cityCoordinates[cityName]) {
-                setMapCenter(cityCoordinates[cityName])
-                setMapZoom(10)
+                setMapCenter(cityCoordinates[cityName]);
+                setMapZoom(10);
             }
         } else {
-            setMapCenter([39.9334, 32.8597])
-            setMapZoom(6)
+            setMapCenter([39.9334, 32.8597]);
+            setMapZoom(6);
         }
-    }, [selectedCity])
+    }, [selectedCity]);
 
     useEffect(() => {
         if (isSearched) {
-            let filtered = staticEarthquakePredictions
+            let filtered = staticEarthquakePredictions;
 
             if (dateRange?.from && dateRange?.to) {
-                filtered = filtered.filter(item => {
-                    const itemDate = new Date(item.date)
-                    return itemDate >= dateRange.from! && itemDate <= dateRange.to!
-                })
+                filtered = filtered.filter((item) => {
+                    const itemDate = new Date(item.date);
+                    return (
+                        itemDate >= dateRange.from! && itemDate <= dateRange.to!
+                    );
+                });
             }
 
             if (selectedCity) {
-                filtered = filtered.filter(item =>
-                    item.location.toLowerCase().includes(selectedCity.toLowerCase())
-                )
+                filtered = filtered.filter((item) =>
+                    item.location
+                        .toLowerCase()
+                        .includes(selectedCity.toLowerCase())
+                );
             }
 
             if (magnitude) {
-                filtered = filtered.filter(item => item.magnitude >= magnitude)
+                filtered = filtered.filter(
+                    (item) => item.magnitude >= magnitude
+                );
             }
 
-            setFilteredPredictions(filtered.slice(0, 3))
+            setFilteredPredictions(filtered.slice(0, 3));
         } else {
-            setFilteredPredictions([])
+            setFilteredPredictions([]);
         }
-    }, [dateRange, selectedCity, magnitude, isSearched])
+    }, [dateRange, selectedCity, magnitude, isSearched]);
 
     if (!isMounted) {
-        return null
+        return null;
     }
 
     const handleDetailClick = () => {
-        const params = new URLSearchParams()
-        if (selectedCity) params.append('city', selectedCity)
-        if (dateRange?.from) params.append('from', dateRange.from.toISOString())
-        if (dateRange?.to) params.append('to', dateRange.to.toISOString())
-        if (magnitude) params.append('magnitude', magnitude.toString())
-        router.push(`/predictions?${params.toString()}`)
-    }
+        const params = new URLSearchParams();
+        if (selectedCity) params.append('city', selectedCity);
+        if (dateRange?.from)
+            params.append('from', dateRange.from.toISOString());
+        if (dateRange?.to) params.append('to', dateRange.to.toISOString());
+        if (magnitude) params.append('magnitude', magnitude.toString());
+        router.push(`/predictions?${params.toString()}`);
+    };
 
     return (
         <div className="absolute inset-0 z-0">
@@ -107,10 +120,7 @@ export function Body() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {selectedCity && filteredPredictions.length > 0 && (
-                    <Marker
-                        position={mapCenter}
-                        icon={CustomMarker}
-                    >
+                    <Marker position={mapCenter} icon={CustomMarker}>
                         <Popup>
                             <div className="min-w-[300px] p-6 bg-white shadow-lg rounded-lg border border-gray-200">
                                 <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">
@@ -119,24 +129,38 @@ export function Body() {
                                 <div className="mb-5">
                                     <div className="grid grid-cols-3 text-sm font-semibold text-gray-600 border-b border-gray-300 pb-3">
                                         <div className="text-left">Tarih</div>
-                                        <div className="text-center">Büyüklük</div>
-                                        <div className="text-right">Olasılık</div>
-                                    </div>
-                                    {filteredPredictions.map((prediction, index) => (
-                                        <div
-                                            key={prediction.id}
-                                            className="grid grid-cols-3 text-sm text-gray-700 py-3 border-b border-gray-100 last:border-none"
-                                        >
-                                            <div className="text-left">
-                                                {index + 1}.{" "}
-                                                {new Date(prediction.date).toLocaleDateString("tr-TR")}
-                                            </div>
-                                            <div className="text-center">{prediction.magnitude.toFixed(1)}</div>
-                                            <div className="text-right text-green-600 font-medium">
-                                                %{prediction.probability}
-                                            </div>
+                                        <div className="text-center">
+                                            Büyüklük
                                         </div>
-                                    ))}
+                                        <div className="text-right">
+                                            Olasılık
+                                        </div>
+                                    </div>
+                                    {filteredPredictions.map(
+                                        (prediction, index) => (
+                                            <div
+                                                key={prediction.id}
+                                                className="grid grid-cols-3 text-sm text-gray-700 py-3 border-b border-gray-100 last:border-none"
+                                            >
+                                                <div className="text-left">
+                                                    {index + 1}.{' '}
+                                                    {new Date(
+                                                        prediction.date
+                                                    ).toLocaleDateString(
+                                                        'tr-TR'
+                                                    )}
+                                                </div>
+                                                <div className="text-center">
+                                                    {prediction.magnitude.toFixed(
+                                                        1
+                                                    )}
+                                                </div>
+                                                <div className="text-right text-green-600 font-medium">
+                                                    %{prediction.probability}
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                                 <Button
                                     onClick={handleDetailClick}
@@ -146,11 +170,9 @@ export function Body() {
                                 </Button>
                             </div>
                         </Popup>
-
                     </Marker>
                 )}
             </MapContainer>
         </div>
-    )
+    );
 }
-

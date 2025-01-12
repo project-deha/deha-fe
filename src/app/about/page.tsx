@@ -1,4 +1,4 @@
-import { Header } from '@/components/Header'
+import { Header } from '@/components/Header';
 
 export default function AboutPage() {
     return (
@@ -10,6 +10,5 @@ export default function AboutPage() {
                 {/* Hakkımızda içeriği buraya eklenecek */}
             </div>
         </>
-    )
+    );
 }
-

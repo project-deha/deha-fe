@@ -1,3 +1,3 @@
-import { atom } from 'jotai'
+import { atom } from 'jotai';
 
-export const isSearchAtom = atom<boolean>(false)
+export const isSearchAtom = atom<boolean>(false);

@@ -1,18 +1,21 @@
-import { cityCoordinates } from './cityCoordinates'
+import { cityCoordinates } from './cityCoordinates';
 
 export interface EarthquakePrediction {
-    id: string
-    date: string
-    time: string
-    latitude: number
-    longitude: number
-    depth: number
-    magnitude: number
-    location: string
-    probability: number
+    id: string;
+    date: string;
+    time: string;
+    latitude: number;
+    longitude: number;
+    depth: number;
+    magnitude: number;
+    location: string;
+    probability: number;
 }
 
-const generatePredictionsForCity = (city: string, coordinates: [number, number]): EarthquakePrediction[] => [
+const generatePredictionsForCity = (
+    city: string,
+    coordinates: [number, number]
+): EarthquakePrediction[] => [
     {
         id: `${city}-1`,
         date: '2025-03-15',
@@ -22,7 +25,7 @@ const generatePredictionsForCity = (city: string, coordinates: [number, number])
         depth: 7.2,
         magnitude: 4.5,
         location: `${city}, Merkez`,
-        probability: 60
+        probability: 60,
     },
     {
         id: `${city}-2`,
@@ -33,7 +36,7 @@ const generatePredictionsForCity = (city: string, coordinates: [number, number])
         depth: 5.8,
         magnitude: 3.8,
         location: `${city}, Merkez`,
-        probability: 40
+        probability: 40,
     },
     {
         id: `${city}-3`,
@@ -44,7 +47,7 @@ const generatePredictionsForCity = (city: string, coordinates: [number, number])
         depth: 9.1,
         magnitude: 5.2,
         location: `${city}, Merkez`,
-        probability: 80
+        probability: 80,
     },
     {
         id: `${city}-4`,
@@ -55,11 +58,11 @@ const generatePredictionsForCity = (city: string, coordinates: [number, number])
         depth: 6.5,
         magnitude: 4.1,
         location: `${city}, Merkez`,
-        probability: 50
-    }
-]
+        probability: 50,
+    },
+];
 
-export const staticEarthquakePredictions: EarthquakePrediction[] = Object.entries(cityCoordinates).flatMap(
-    ([city, coordinates]) => generatePredictionsForCity(city, coordinates)
-)
-
+export const staticEarthquakePredictions: EarthquakePrediction[] =
+    Object.entries(cityCoordinates).flatMap(([city, coordinates]) =>
+        generatePredictionsForCity(city, coordinates)
+    );

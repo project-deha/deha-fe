@@ -1,9 +1,5 @@
-import { Provider } from 'jotai'
+import { Provider } from 'jotai';
 
 function App() {
-  return (
-    <>
-      {/* Your app components */}
-    </>
-  )
-} 
+    return <>{/* Your app components */}</>;
+}

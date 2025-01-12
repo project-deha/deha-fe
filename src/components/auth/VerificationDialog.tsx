@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import axios from 'axios'
-import { useEffect, useRef, useState } from 'react'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 
-const API_HOST = 'http://localhost:8080'
+const API_HOST = 'http://localhost:8080';
 
 // Configure axios instance
 const api = axios.create({
@@ -19,9 +19,9 @@ const api = axios.create({
     withCredentials: true, // This enables cookie handling
     headers: {
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
     },
-})
+});
 
 export function VerificationDialog({
     isOpen,
@@ -29,71 +29,84 @@ export function VerificationDialog({
     email,
     onVerificationComplete,
 }: {
-    isOpen: boolean
-    onClose: () => void
-    email: string
-    onVerificationComplete: () => void
+    isOpen: boolean;
+    onClose: () => void;
+    email: string;
+    onVerificationComplete: () => void;
 }) {
-    const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', ''])
-    const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+    const [verificationCode, setVerificationCode] = useState([
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+    ]);
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const handleChange = (index: number, value: string) => {
         if (value.length <= 1) {
-            const newCode = [...verificationCode]
-            newCode[index] = value
-            setVerificationCode(newCode)
+            const newCode = [...verificationCode];
+            newCode[index] = value;
+            setVerificationCode(newCode);
 
             // Move to next input if value is entered
             if (value && index < 5) {
-                inputRefs.current[index + 1]?.focus()
+                inputRefs.current[index + 1]?.focus();
             }
         }
-    }
+    };
 
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (
+        index: number,
+        e: React.KeyboardEvent<HTMLInputElement>
+    ) => {
         if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
-            inputRefs.current[index - 1]?.focus()
+            inputRefs.current[index - 1]?.focus();
         }
-    }
+    };
 
     const handleSubmit = async () => {
-        const code = verificationCode.join('')
+        const code = verificationCode.join('');
         if (code.length === 6) {
             try {
                 const response = await api.post('/api/v1/auth/verify', {
-                    verificationCode: parseInt(code)
-                })
+                    verificationCode: parseInt(code),
+                });
 
                 if (response.status === 200) {
-                    onVerificationComplete()
+                    onVerificationComplete();
                 }
             } catch (error) {
-                console.error('Doğrulama hatası:', error)
+                console.error('Doğrulama hatası:', error);
             }
         }
-    }
+    };
 
     const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-        event.preventDefault()
-        const pastedData = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+        event.preventDefault();
+        const pastedData = event.clipboardData
+            .getData('text')
+            .replace(/\D/g, '')
+            .slice(0, 6);
         if (pastedData) {
-            const newCode = Array(6).fill('')
+            const newCode = Array(6).fill('');
             for (let i = 0; i < Math.min(pastedData.length, 6); i++) {
-                newCode[i] = pastedData[i]
+                newCode[i] = pastedData[i];
             }
-            setVerificationCode(newCode)
+            setVerificationCode(newCode);
             // Focus the next empty input or the last input if all are filled
-            const nextEmptyIndex = newCode.findIndex(digit => !digit)
-            const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex
-            inputRefs.current[focusIndex]?.focus()
+            const nextEmptyIndex = newCode.findIndex((digit) => !digit);
+            const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex;
+            inputRefs.current[focusIndex]?.focus();
         }
-    }
+    };
 
     useEffect(() => {
         if (isOpen) {
-            inputRefs.current[0]?.focus()
+            inputRefs.current[0]?.focus();
         }
-    }, [isOpen])
+    }, [isOpen]);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -114,7 +127,9 @@ export function VerificationDialog({
                                 type="text"
                                 maxLength={1}
                                 value={digit}
-                                onChange={(e) => handleChange(index, e.target.value)}
+                                onChange={(e) =>
+                                    handleChange(index, e.target.value)
+                                }
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
                                 ref={(el) => (inputRefs.current[index] = el)}
@@ -125,12 +140,12 @@ export function VerificationDialog({
                     <Button
                         onClick={handleSubmit}
                         className="w-full"
-                        disabled={verificationCode.some(digit => !digit)}
+                        disabled={verificationCode.some((digit) => !digit)}
                     >
                         Devam Et
                     </Button>
                 </div>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

@@ -1,19 +1,25 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { ChevronRight, Languages, FileText, HelpCircle, Info } from 'lucide-react'
+import { useState } from 'react';
+import {
+    ChevronRight,
+    Languages,
+    FileText,
+    HelpCircle,
+    Info,
+} from 'lucide-react';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
-import Link from 'next/link'
-import { Header } from '@/components/Header'
+} from '@/components/ui/select';
+import Link from 'next/link';
+import { Header } from '@/components/Header';
 
 export default function SettingsPage() {
-    const [language, setLanguage] = useState('tr')
+    const [language, setLanguage] = useState('tr');
 
     return (
         <>
@@ -28,7 +34,9 @@ export default function SettingsPage() {
                             <Languages className="w-5 h-5" />
                             <div>
                                 <div className="font-medium">Dil</div>
-                                <div className="text-sm text-muted-foreground">Dili seçiniz</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Dili seçiniz
+                                </div>
                             </div>
                         </div>
                         <Select value={language} onValueChange={setLanguage}>
@@ -49,7 +57,9 @@ export default function SettingsPage() {
                     >
                         <div className="flex items-center gap-3">
                             <FileText className="w-5 h-5" />
-                            <span className="font-medium">Gizlilik politikası</span>
+                            <span className="font-medium">
+                                Gizlilik politikası
+                            </span>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </Link>
@@ -80,6 +90,5 @@ export default function SettingsPage() {
                 </div>
             </div>
         </>
-    )
+    );
 }
-
