@@ -1,26 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import 'react-day-picker/dist/style.css';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
-import { Search, CalendarIcon, MapPin, Activity, Check, X } from 'lucide-react';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Calendar } from '@/components/ui/calendar';
+import { useSearch } from '@/contexts/SearchContext';
+import { cn } from '@/lib/utils';
+import { predictionsService } from '@/services/predictionsServices';
+import { isSearchAtom } from '@/store/isSearch';
+import { predictionsAtom } from '@/store/predictions';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { CircularProgress } from '@/components/ui/circular-progress';
-import { predictionsService } from '@/services/predictionsServices';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { predictionsAtom } from '@/store/predictions';
-import { useSearch } from '@/contexts/SearchContext';
-import { isSearchAtom } from '@/store/isSearch';
+import { useSetAtom } from 'jotai';
+import { Activity, CalendarIcon, Check, MapPin, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import 'react-day-picker/dist/style.css';
 
 // Türkiye şehirleri listesi
 const cities = [
@@ -130,18 +129,13 @@ export function SearchBar({
     initialMagnitude = 0.0,
 }: SearchBarProps) {
     const [dateType, setDateType] = useState<'days' | 'months'>('days');
-    //const [dateRange, setDateRange] = useState<CustomDateRange | undefined>(initialDateRange)
     const [confirmedDateRange, setConfirmedDateRange] = useState<
         CustomDateRange | undefined
     >(initialDateRange);
-    //const [selectedCity, setSelectedCity] = useState<string>(initialCity || '')
     const [confirmedCity, setConfirmedCity] = useState<string>(
         initialCity || ''
     );
     const [cityInput, setCityInput] = useState<string>('');
-    const [monthCount, setMonthCount] = useState(1);
-    const [confirmedMonthCount, setConfirmedMonthCount] = useState(0);
-    //const [magnitude, setMagnitude] = useState(initialMagnitude)
     const [confirmedMagnitude, setConfirmedMagnitude] =
         useState(initialMagnitude);
     const [isOpen, setIsOpen] = useState({
@@ -200,8 +194,6 @@ export function SearchBar({
             return confirmedDateRange.to
                 ? `${format(confirmedDateRange.from, 'd LLL', { locale: tr })} - ${format(confirmedDateRange.to, 'd LLL', { locale: tr })}`
                 : format(confirmedDateRange.from, 'd LLL', { locale: tr });
-        } else if (dateType === 'months' && confirmedMonthCount > 0) {
-            return `${confirmedMonthCount} Ay`;
         }
         return 'Tarih Seç';
     };
@@ -209,8 +201,6 @@ export function SearchBar({
     const clearDate = async () => {
         setDateRange(undefined);
         setConfirmedDateRange(undefined);
-        setMonthCount(1);
-        setConfirmedMonthCount(0);
         setDateType('days');
         setIsOpen((prev) => ({ ...prev, date: false }));
 
@@ -294,17 +284,17 @@ export function SearchBar({
                         <Calendar
                             mode="range"
                             selected={{
-                                from: dateRange?.from || undefined,
-                                to: dateRange?.to || undefined,
+                                from: confirmedDateRange?.from || undefined,
+                                to: confirmedDateRange?.to || undefined,
                             }}
                             onSelect={(range) => {
                                 if (range) {
-                                    setDateRange({
+                                    setConfirmedDateRange({
                                         from: range.from || null,
                                         to: range.to || null,
                                     });
                                 } else {
-                                    setDateRange(undefined);
+                                    setConfirmedDateRange(undefined);
                                 }
                             }}
                             numberOfMonths={1}
@@ -315,10 +305,10 @@ export function SearchBar({
                         <Button
                             className="w-full"
                             onClick={async () => {
-                                setConfirmedDateRange(dateRange);
+                                setDateRange(confirmedDateRange);
                                 setIsOpen((prev) => ({ ...prev, date: false }));
                                 const params = {
-                                    dateRange: dateRange || undefined,
+                                    dateRange: confirmedDateRange || undefined,
                                     selectedCity: confirmedCity,
                                     magnitude: confirmedMagnitude,
                                 };
@@ -396,7 +386,7 @@ export function SearchBar({
                                             selectedCity === city &&
                                                 'bg-primary/10'
                                         )}
-                                        onClick={() => setSelectedCity(city)}
+                                        onClick={() => setConfirmedCity(city)}
                                     >
                                         {city}
                                     </Button>
@@ -407,7 +397,7 @@ export function SearchBar({
                         <Button
                             className="w-full"
                             onClick={async () => {
-                                setConfirmedCity(selectedCity);
+                                setSelectedCity(confirmedCity);
                                 setIsOpen((prev) => ({ ...prev, city: false }));
                                 const params = {
                                     dateRange: confirmedDateRange,
