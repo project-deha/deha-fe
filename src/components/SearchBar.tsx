@@ -16,6 +16,7 @@ import { predictionsService } from '@/services/predictionsServices'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { predictionsAtom } from '@/store/predictions'
 import { useSearch } from '@/contexts/SearchContext'
+import { isSearchAtom } from '@/store/isSearch'
 
 // Türkiye şehirleri listesi
 const cities = [
@@ -63,6 +64,7 @@ export function SearchBar({
 
     const { dateRange, selectedCity, magnitude, setDateRange, setSelectedCity, setMagnitude } = useSearch()
     const setPredictions = useSetAtom(predictionsAtom)
+    const setIsSearch = useSetAtom(isSearchAtom);
 
     useEffect(() => {
         setDateRange(initialDateRange)
@@ -216,8 +218,9 @@ export function SearchBar({
                                     selectedCity: confirmedCity,
                                     magnitude: confirmedMagnitude
                                 }
-                                await fetchPredictions(params)
+                               //await fetchPredictions(params)
                                 onSearch(params)
+                                setIsSearch(true)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -296,8 +299,9 @@ export function SearchBar({
                                     selectedCity: selectedCity || undefined,
                                     magnitude: confirmedMagnitude
                                 }
-                                await fetchPredictions(params)
+                                //await fetchPredictions(params)
                                 onSearch(params)
+                                setIsSearch(true)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -369,6 +373,7 @@ export function SearchBar({
                                     magnitude: confirmedMagnitude || undefined
                                 }
                                 onSearch(params)
+                                setIsSearch(true)
                             }}
                         >
                             <Check className="mr-2 h-4 w-4" />
@@ -377,11 +382,6 @@ export function SearchBar({
                     </div>
                 </PopoverContent>
             </Popover>
-
-            {/* Arama Butonu */}
-            <Button onClick={handleSearch} size="icon" className="h-10 w-10">
-                <Search className="h-4 w-4" />
-            </Button>
         </div>
     )
 }
