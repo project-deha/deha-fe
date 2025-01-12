@@ -9,17 +9,14 @@ import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import { useSearch } from '@/contexts/SearchContext';
 import { predictionsService } from '@/services/predictionsServices';
+import { isSearchAtom } from '@/store/isSearch';
 // Update TooltipContent to handle navigation
 function TooltipContent({ predictions, cityName }: { predictions?: PredictedEarthquakeDto[], cityName: string }) {
     const router = useRouter();
     const { setSelectedCity, setMagnitude } = useSearch();
 
-    const handleDetailsClick = (prediction: PredictedEarthquakeDto) => {
-        // Only set the city filter
+    const handleDetailsClick = () => {
         setSelectedCity(cityName);
-
-
-        // Navigate to predictions page
         router.push('/predictions');
     };
 
@@ -40,7 +37,7 @@ function TooltipContent({ predictions, cityName }: { predictions?: PredictedEart
                 <p>Possibility: {prediction.possibility}%</p>
                 <p>Magnitude: {prediction.magnitude}</p>
                 <p>Depth: {prediction.depth}km</p>
-                <p>Prediction Date: {new Date(prediction.predictionDate).toLocaleDateString('en-GB', {
+                <p>Prediction Date: {new Date(prediction.predictionDate).toLocaleDateString('tr-TR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric'
@@ -50,7 +47,7 @@ function TooltipContent({ predictions, cityName }: { predictions?: PredictedEart
                     variant="outline"
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleDetailsClick(prediction);
+                        handleDetailsClick();
                     }}
                 >
                     Detaylar
@@ -69,6 +66,8 @@ export function Map() {
     const { dateRange, selectedCity, magnitude, setDateRange, setSelectedCity, setMagnitude } = useSearch()
     const predictions = useAtomValue(predictionsAtom);
     const setPredictions = useSetAtom(predictionsAtom);
+    const isSearch = useAtomValue(isSearchAtom)
+    const setIsSearch = useSetAtom(isSearchAtom)
     // Add state to track selected city
 
     useEffect(() => {
@@ -83,8 +82,22 @@ export function Map() {
             }
         }
 
-        fetchInitialPredictions()
-    }, [])
+        const fetchFilteredPredictions = async () => {
+            const searchParams = {
+                dateRange,
+                selectedCity,
+                magnitude,
+                page: 0,
+                size: 100
+            }
+            const response = await predictionsService.filterPredictions(searchParams)
+            setPredictions(response)
+        }
+
+        if(isSearch) fetchFilteredPredictions();
+        else fetchInitialPredictions();
+
+    }, [dateRange, selectedCity, magnitude])
 
     const cityWrapper = (cityComponent: JSX.Element, city: any) => {
         const cityPredictions = predictions?.content?.filter(
@@ -106,8 +119,8 @@ export function Map() {
             >
                 {React.cloneElement(cityComponent, {
                     style: {
-                        fill: cityPredictions?.length && cityPredictions.length > 0 ? '#ff4d4f' : '#d9d9d9',
-                        opacity: cityPredictions?.length && cityPredictions.length > 0 ? 0.8 : 0.5,
+                        fill: highestPossibility ? '#ff4d4f' : '#d9d9d9',
+                        opacity: highestPossibility ? 0.8 : 0.5,
                     },
                     onClick: (e: React.MouseEvent) => {
                         e.stopPropagation();

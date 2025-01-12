@@ -11,14 +11,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import axios from 'axios'
 import { useAtom } from "jotai"
 import { predictionsAtom } from "@/store/predictions"
 import { predictionsService } from "@/services/predictionsServices"
@@ -56,8 +48,6 @@ type SortConfig = {
     key: keyof PredictedEarthquakeDto | 'city' | null
     direction: 'asc' | 'desc'
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export function PredictionsTable({ dateRange, selectedCity, magnitude }: PredictionsTableProps) {
     const [currentPage, setCurrentPage] = useState(1)
@@ -173,7 +163,7 @@ export function PredictionsTable({ dateRange, selectedCity, magnitude }: Predict
                             <TableCell>{prediction.magnitude.toFixed(1)}</TableCell>
                             <TableCell>{prediction.location.city}</TableCell>
                             <TableCell>%{(prediction.possibility)}</TableCell>
-                            <TableCell>{new Date(prediction.predictionDate).toLocaleDateString()}</TableCell>
+                            <TableCell>{new Date(prediction.predictionDate).toLocaleDateString('tr-TR')}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
