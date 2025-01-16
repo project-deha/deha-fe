@@ -1,12 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-    ChevronDown,
-    ChevronUp,
-    ChevronLeft,
-    ChevronRight,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -15,10 +9,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { useAtom } from 'jotai';
-import { predictionsAtom } from '@/store/predictions';
 import { predictionsService } from '@/services/predictionsServices';
+import { predictionsAtom } from '@/store/predictions';
+import { useAtom } from 'jotai';
+import {
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronUp,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 type CustomDateRange = {
     from: Date | null;
@@ -213,7 +213,7 @@ export function PredictionsTable({
                             </TableCell>
                             <TableCell>
                                 <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
-                                    %{(prediction.possibility * 100).toFixed(1)}
+                                    %{prediction.possibility}
                                 </span>
                             </TableCell>
                         </TableRow>

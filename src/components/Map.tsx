@@ -13,7 +13,6 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import TurkeyMap from 'turkey-map-react';
-import { Button } from './ui/button';
 
 function TooltipContent({
     predictions,
@@ -50,7 +49,7 @@ function TooltipContent({
                     <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-lg text-black">{cityName}</h3>
                         <span className="inline-flex items-center justify-center px-2.5 py-0.5 ml-3 rounded-full text-sm font-medium bg-primary/10 text-primary">
-                            %{(prediction.possibility * 100).toFixed(1)}
+                            %{prediction.possibility}
                         </span>
                     </div>
 
@@ -147,18 +146,18 @@ export function Map() {
         // Olasılık değerine göre renk belirleme
         const getCityColor = (possibility: number) => {
             if (possibility <= 0) return '#d9d9d9';  // Tahmin yoksa gri
-            if (possibility <= 0.25) return '#22c55e';  // Yeşil
-            if (possibility <= 0.50) return '#eab308';  // Sarı
-            if (possibility <= 0.75) return '#f97316';  // Turuncu
+            if (possibility <= 25) return '#22c55e';  // Yeşil
+            if (possibility <= 50) return '#eab308';  // Sarı
+            if (possibility <= 75) return '#f97316';  // Turuncu
             return '#ef4444';  // Kırmızı
         };
 
         // Hover için rengin koyulaştırılmış hali
         const getDarkerColor = (possibility: number) => {
             if (possibility <= 0) return '#bfbfbf';  // Koyu gri
-            if (possibility <= 0.25) return '#16a34a';  // Koyu yeşil
-            if (possibility <= 0.50) return '#ca8a04';  // Koyu sarı
-            if (possibility <= 0.75) return '#ea580c';  // Koyu turuncu
+            if (possibility <= 25) return '#16a34a';  // Koyu yeşil
+            if (possibility <= 50) return '#ca8a04';  // Koyu sarı
+            if (possibility <= 75) return '#ea580c';  // Koyu turuncu
             return '#dc2626';  // Koyu kırmızı
         };
 
