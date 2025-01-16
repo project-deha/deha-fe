@@ -86,7 +86,14 @@
     * {
         @apply border-border;
     }
+
     body {
         @apply bg-background text-foreground;
     }
+}
+
+.ant-tooltip-inner {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
