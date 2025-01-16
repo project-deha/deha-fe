@@ -4,40 +4,35 @@ import { cn } from '@/lib/utils';
 
 interface CircularProgressProps {
     value: number;
-    maxValue: number;
+    maxValue?: number;
+    label?: string;
     size?: number;
     strokeWidth?: number;
-    label?: string | number;
-    className?: string;
-    showPercentage?: boolean;
 }
 
 export function CircularProgress({
     value,
-    maxValue,
-    size = 120,
-    strokeWidth = 10,
+    maxValue = 10,
     label,
-    className,
-    showPercentage = false,
+    size = 120,
+    strokeWidth = 12,
 }: CircularProgressProps) {
+    const range = maxValue - value;
+    const percentage = (range / maxValue) * 100;
+
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
-    const progress = (value / maxValue) * circumference;
-    const displayValue = showPercentage
-        ? `${Math.round((value / maxValue) * 100)}%`
-        : label;
+    const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div
-            className={cn(
-                'relative inline-flex items-center justify-center',
-                className
-            )}
-        >
-            <svg width={size} height={size} className="transform -rotate-90">
+        <div className="relative inline-flex items-center justify-center">
+
+            <svg
+                className="transform rotate-90"
+                style={{ width: size, height: size }}
+            >
                 <circle
-                    className="text-gray-200"
+                    className="text-primary/20"
                     strokeWidth={strokeWidth}
                     stroke="currentColor"
                     fill="transparent"
@@ -49,7 +44,7 @@ export function CircularProgress({
                     className="text-primary transition-all duration-300 ease-in-out"
                     strokeWidth={strokeWidth}
                     strokeDasharray={circumference}
-                    strokeDashoffset={circumference - progress}
+                    strokeDashoffset={offset}
                     strokeLinecap="round"
                     stroke="currentColor"
                     fill="transparent"
@@ -58,13 +53,18 @@ export function CircularProgress({
                     cy={size / 2}
                 />
             </svg>
-            {displayValue && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-semibold">
-                        {displayValue}
-                    </span>
+
+            <div className="absolute flex flex-col items-center">
+                <span className="text-xl font-semibold">{value.toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground">ve üzeri</span>
+            </div>
+
+            <div className="absolute bottom-0 w-full flex justify-center">
+                <div className="flex flex-col items-center -mb-1">
+                    <div className="w-[2px] h-[8px] bg-muted-foreground/30 rounded-full mb-1" />
+                    <span className="text-sm text-white">10/0</span>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

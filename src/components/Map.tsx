@@ -23,7 +23,7 @@ function TooltipContent({
     cityName: string;
 }) {
     const router = useRouter();
-    const { setSelectedCity, setMagnitude } = useSearch();
+    const { setSelectedCity } = useSearch();
 
     const handleDetailsClick = () => {
         setSelectedCity(cityName);
@@ -32,8 +32,9 @@ function TooltipContent({
 
     if (!predictions?.length) {
         return (
-            <div>
-                <p className="text-gray-500">No prediction data available</p>
+            <div className="p-3 bg-card rounded-lg border border-border/50">
+                <h3 className="font-semibold text-lg mb-2 text-black text-center">{cityName}</h3>
+                <p className="text-muted-foreground text-center">Bu şehir için tahmin bulunmamaktadır.</p>
             </div>
         );
     }
@@ -43,33 +44,42 @@ function TooltipContent({
         .slice(0, 1);
 
     return (
-        <div>
-            {topPredictions.map((prediction, index) => (
-                <div key={prediction.id} className="">
-                    <p>Possibility: {prediction.possibility}%</p>
-                    <p>Magnitude: {prediction.magnitude}</p>
-                    <p>Depth: {prediction.depth}km</p>
-                    <p>
-                        Prediction Date:{' '}
-                        {new Date(prediction.predictionDate).toLocaleDateString(
-                            'tr-TR',
-                            {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                            }
-                        )}
-                    </p>
-                    <Button
-                        className="text-black"
-                        variant="outline"
+        <div className="p-4 bg-card rounded-lg border border-border/50 shadow-sm">
+            {topPredictions.map((prediction) => (
+                <div key={prediction.id} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg text-black">{cityName}</h3>
+                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 ml-3 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                            %{(prediction.possibility * 100).toFixed(1)}
+                        </span>
+                    </div>
+
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center justify-between">
+                            <span>Büyüklük:</span>
+                            <span className="font-medium text-foreground">{prediction.magnitude.toFixed(1)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>Derinlik:</span>
+                            <span className="font-medium text-foreground">{prediction.depth}km</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>Tarih:</span>
+                            <span className="font-medium text-foreground">
+                                {new Date(prediction.predictionDate).toLocaleDateString('tr-TR')}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        className="w-full px-4 py-2 mt-2 text-sm border rounded-md text-black"
                         onClick={(e) => {
                             e.stopPropagation();
                             handleDetailsClick();
                         }}
                     >
-                        Detaylar
-                    </Button>
+                        Detayları Gör
+                    </button>
                 </div>
             ))}
         </div>
@@ -127,13 +137,33 @@ export function Map() {
 
     const cityWrapper = (cityComponent: JSX.Element, city: any) => {
         const cityPredictions = predictions?.content?.filter(
-            (pred) =>
-                pred.location.city.toLowerCase() === city.name.toLowerCase()
+            (pred) => pred.location.city.toLowerCase() === city.name.toLowerCase()
         );
 
         const highestPossibility = cityPredictions?.length
             ? Math.max(...cityPredictions.map((p) => p.possibility))
             : 0;
+
+        // Olasılık değerine göre renk belirleme
+        const getCityColor = (possibility: number) => {
+            if (possibility <= 0) return '#d9d9d9';  // Tahmin yoksa gri
+            if (possibility <= 0.25) return '#22c55e';  // Yeşil
+            if (possibility <= 0.50) return '#eab308';  // Sarı
+            if (possibility <= 0.75) return '#f97316';  // Turuncu
+            return '#ef4444';  // Kırmızı
+        };
+
+        // Hover için rengin koyulaştırılmış hali
+        const getDarkerColor = (possibility: number) => {
+            if (possibility <= 0) return '#bfbfbf';  // Koyu gri
+            if (possibility <= 0.25) return '#16a34a';  // Koyu yeşil
+            if (possibility <= 0.50) return '#ca8a04';  // Koyu sarı
+            if (possibility <= 0.75) return '#ea580c';  // Koyu turuncu
+            return '#dc2626';  // Koyu kırmızı
+        };
+
+        const cityColor = getCityColor(highestPossibility);
+        const hoverColor = getDarkerColor(highestPossibility);
 
         return (
             <Tooltip
@@ -145,11 +175,19 @@ export function Map() {
                 }
                 key={`city-${city.plateNumber}`}
                 open={selectedCity === city.name ? true : undefined}
+                overlayClassName="z-[15]"
+                overlayStyle={{ zIndex: 15 }}
             >
                 {React.cloneElement(cityComponent, {
                     style: {
-                        fill: highestPossibility ? '#ff4d4f' : '#d9d9d9',
-                        opacity: highestPossibility ? 0.8 : 0.5,
+                        fill: cityColor,
+                        opacity: highestPossibility <= 0 ? 0.5 : 0.8,
+                    },
+                    onMouseEnter: (e: React.MouseEvent) => {
+                        e.currentTarget.style.fill = hoverColor;
+                    },
+                    onMouseLeave: (e: React.MouseEvent) => {
+                        e.currentTarget.style.fill = cityColor;
                     },
                     onClick: (e: React.MouseEvent) => {
                         e.stopPropagation();
@@ -176,7 +214,6 @@ export function Map() {
                 showTooltip={false}
                 customStyle={{
                     idleColor: 'inherit',
-                    hoverColor: 'pink',
                 }}
                 hoverable={true}
                 cityWrapper={cityWrapper}

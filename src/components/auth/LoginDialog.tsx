@@ -72,11 +72,11 @@ export function LoginDialog({
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle className="text-center text-xl">
-                        Oturum açın
+                        Oturum Açın
                     </DialogTitle>
                 </DialogHeader>
                 <div className="text-center mb-6">
-                    <h2 className="text-lg">Deha'ya Hoş Geldiniz</h2>
+                    <h2 className="text-lg">DEHA'ya Hoş Geldiniz</h2>
                 </div>
                 <Form {...form}>
                     <form

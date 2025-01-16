@@ -46,7 +46,9 @@ const formSchema = z
         name: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
         surname: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
         email: z.string().email('Geçerli bir e-posta adresi giriniz'),
-        password: z.string().min(6, 'Şifre en az 6 karakter olmalıdır'),
+        password: z
+            .string()
+            .min(12, 'Şifre en az 12 karakter olmalıdır'),
         confirmPassword: z.string(),
         terms: z
             .boolean()
@@ -82,6 +84,12 @@ export function RegisterDialog({
 }) {
     const [showVerification, setShowVerification] = useState(false);
     const [email, setEmail] = useState('');
+    const [showNameHelp, setShowNameHelp] = useState(true);
+    const [showSurnameHelp, setShowSurnameHelp] = useState(true);
+    const [showEmailHelp, setShowEmailHelp] = useState(true);
+    const [showPasswordHelp, setShowPasswordHelp] = useState(true);
+    const [showConfirmPasswordHelp, setShowConfirmPasswordHelp] = useState(true);
+    const [showTermsHelp, setShowTermsHelp] = useState(true);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -152,7 +160,7 @@ export function RegisterDialog({
     return (
         <>
             <Dialog open={isOpen && !showVerification} onOpenChange={onClose}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle className="text-center text-xl font-bold">
                             Kaydolun
@@ -173,8 +181,17 @@ export function RegisterDialog({
                                             <Input
                                                 placeholder="Adınız"
                                                 {...field}
+                                                onChange={(e) => {
+                                                    field.onChange(e);
+                                                    setShowNameHelp(e.target.value === '');
+                                                }}
                                             />
                                         </FormControl>
+                                        {showNameHelp && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Ad en az 2 karakter olmalıdır.
+                                            </div>
+                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -189,8 +206,17 @@ export function RegisterDialog({
                                             <Input
                                                 placeholder="Soyadınız"
                                                 {...field}
+                                                onChange={(e) => {
+                                                    field.onChange(e);
+                                                    setShowSurnameHelp(e.target.value === '');
+                                                }}
                                             />
                                         </FormControl>
+                                        {showSurnameHelp && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Soyad en az 2 karakter olmalıdır.
+                                            </div>
+                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -206,8 +232,17 @@ export function RegisterDialog({
                                                 placeholder="E-mail"
                                                 {...field}
                                                 type="email"
+                                                onChange={(e) => {
+                                                    field.onChange(e);
+                                                    setShowEmailHelp(e.target.value === '');
+                                                }}
                                             />
                                         </FormControl>
+                                        {showEmailHelp && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Geçerli bir e-posta adresi girilmelidir.(örn: ad.soyad@domain.com)
+                                            </div>
+                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -223,8 +258,17 @@ export function RegisterDialog({
                                                 {...field}
                                                 type="password"
                                                 placeholder="Şifreniz"
+                                                onChange={(e) => {
+                                                    field.onChange(e);
+                                                    setShowPasswordHelp(e.target.value === '');
+                                                }}
                                             />
                                         </FormControl>
+                                        {showPasswordHelp && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Şifre en az 12 karakter olmalıdır ayrıca en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.
+                                            </div>
+                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -234,14 +278,23 @@ export function RegisterDialog({
                                 name="confirmPassword"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Şifre (Tekrar)</FormLabel>
+                                        <FormLabel>Şifre(Tekrar)</FormLabel>
                                         <FormControl>
                                             <Input
                                                 {...field}
                                                 placeholder="Şifreniz"
                                                 type="password"
+                                                onChange={(e) => {
+                                                    field.onChange(e);
+                                                    setShowConfirmPasswordHelp(e.target.value === '');
+                                                }}
                                             />
                                         </FormControl>
+                                        {showConfirmPasswordHelp && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Yukarıda girdilen şifrenin aynısını tekrar girilmelidir.
+                                            </div>
+                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -254,7 +307,10 @@ export function RegisterDialog({
                                         <FormControl>
                                             <Checkbox
                                                 checked={field.value}
-                                                onCheckedChange={field.onChange}
+                                                onCheckedChange={(checked) => {
+                                                    field.onChange(checked);
+                                                    setShowTermsHelp(!checked);
+                                                }}
                                             />
                                         </FormControl>
                                         <div className="space-y-1 leading-none">
@@ -263,6 +319,11 @@ export function RegisterDialog({
                                                 İlkesini ve Çerezler İlkesini
                                                 kabul ediyorum.
                                             </FormLabel>
+                                            {showTermsHelp && (
+                                                <div className="text-xs text-muted-foreground mt-1">
+                                                    Devam etmek için koşullar kabul edilmelidir.
+                                                </div>
+                                            )}
                                             <FormMessage />
                                         </div>
                                     </FormItem>

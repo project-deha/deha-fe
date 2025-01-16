@@ -162,36 +162,43 @@ export function PredictionsTable({
     };
 
     return (
-        <div className="rounded-md border bg-white">
+        <div className="rounded-xl border bg-card shadow-sm">
             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>
-                            {renderSortableHeader('Enlem(N)', 'latitude')}
+                <TableHeader className="bg-muted/50">
+                    <TableRow className="hover:bg-transparent">
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Tarih', 'predictionDate')}
                         </TableHead>
-                        <TableHead>
-                            {renderSortableHeader('Boylam(E)', 'longitude')}
-                        </TableHead>
-                        <TableHead>
-                            {renderSortableHeader('Derinlik(km)', 'depth')}
-                        </TableHead>
-                        <TableHead>
-                            {renderSortableHeader('Büyüklük', 'magnitude')}
-                        </TableHead>
-                        <TableHead>
+                        <TableHead className="font-semibold">
                             {renderSortableHeader('Şehir', 'city')}
                         </TableHead>
-                        <TableHead>
-                            {renderSortableHeader('Olasılık', 'possibility')}
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Enlem(N)', 'latitude')}
                         </TableHead>
-                        <TableHead>
-                            {renderSortableHeader('Tarih', 'predictionDate')}
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Boylam(E)', 'longitude')}
+                        </TableHead>
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Derinlik(km)', 'depth')}
+                        </TableHead>
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Büyüklük', 'magnitude')}
+                        </TableHead>
+                        <TableHead className="font-semibold">
+                            {renderSortableHeader('Olasılık', 'possibility')}
                         </TableHead>
                     </TableRow>
                 </TableHeader>
-                <TableBody className="bg-sky-50">
+                <TableBody>
                     {sortedData.map((prediction) => (
-                        <TableRow key={prediction.id}>
+                        <TableRow
+                            key={prediction.id}
+                            className="hover:bg-muted/50 transition-colors"
+                        >
+                            <TableCell className="font-medium">
+                                {new Date(prediction.predictionDate).toLocaleDateString('tr-TR')}
+                            </TableCell>
+                            <TableCell>{prediction.location.city}</TableCell>
                             <TableCell>
                                 {prediction.location.latitude.toFixed(4)}
                             </TableCell>
@@ -200,38 +207,39 @@ export function PredictionsTable({
                             </TableCell>
                             <TableCell>{prediction.depth.toFixed(1)}</TableCell>
                             <TableCell>
-                                {prediction.magnitude.toFixed(1)}
+                                <span className="font-medium text-primary">
+                                    {prediction.magnitude.toFixed(1)}
+                                </span>
                             </TableCell>
-                            <TableCell>{prediction.location.city}</TableCell>
-                            <TableCell>%{prediction.possibility}</TableCell>
                             <TableCell>
-                                {new Date(
-                                    prediction.predictionDate
-                                ).toLocaleDateString('tr-TR')}
+                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                                    %{(prediction.possibility * 100).toFixed(1)}
+                                </span>
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
 
-            <div className="flex items-center justify-between px-4 py-4 border-t">
+            <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/50">
                 <div className="flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">
-                        Toplam {predictions.totalElements} tahmin
+                        Toplam <span className="font-medium text-foreground">{predictions.totalElements}</span> tahmin
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                     <div className="text-sm text-muted-foreground">
-                        Sayfa {predictions.number + 1} /{' '}
-                        {predictions.totalPages}
+                        Sayfa <span className="font-medium text-foreground">{predictions.number + 1}</span> /{' '}
+                        <span className="font-medium text-foreground">{predictions.totalPages}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="icon"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={predictions.number === 0}
+                            className="hover:bg-background"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -239,10 +247,8 @@ export function PredictionsTable({
                             variant="outline"
                             size="icon"
                             onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={
-                                predictions.number ===
-                                predictions.totalPages - 1
-                            }
+                            disabled={predictions.number === predictions.totalPages - 1}
+                            className="hover:bg-background"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>

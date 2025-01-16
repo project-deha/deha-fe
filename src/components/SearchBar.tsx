@@ -268,7 +268,7 @@ export function SearchBar({
                                 Tarih Aralığı
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                Deprem tahminleri için tarih aralığı seçin.
+                                Deprem tahminleri için tarih aralığı seçiniz.
                             </p>
                         </div>
                         <Button
@@ -351,7 +351,7 @@ export function SearchBar({
                                 Şehir Seçimi
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                Deprem tahminleri için şehir seçin.
+                                Deprem tahminleri için şehir seçiniz.
                             </p>
                         </div>
                         <Button
@@ -384,7 +384,7 @@ export function SearchBar({
                                         className={cn(
                                             'w-full justify-start font-normal',
                                             selectedCity === city &&
-                                                'bg-primary/10'
+                                            'bg-primary/10'
                                         )}
                                         onClick={() => setConfirmedCity(city)}
                                     >
@@ -430,7 +430,7 @@ export function SearchBar({
                             'flex-1 justify-start text-left font-normal',
                             'hover:bg-gray-50 active:scale-[0.98] transition-all',
                             confirmedMagnitude > 0 &&
-                                'text-primary border-primary'
+                            'text-primary border-primary'
                         )}
                     >
                         <Activity className="mr-2 h-5 w-5" />
@@ -444,7 +444,7 @@ export function SearchBar({
                                 Deprem Büyüklüğü
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                Minimum deprem büyüklüğünü seçin.
+                                Minimum deprem büyüklüğünü seçiniz.
                             </p>
                         </div>
                         <Button
