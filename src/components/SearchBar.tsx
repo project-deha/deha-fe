@@ -434,7 +434,7 @@ export function SearchBar({
                         )}
                     >
                         <Activity className="mr-2 h-5 w-5" />
-                        Büyüklük: {confirmedMagnitude.toFixed(1)}
+                        Büyüklük: {confirmedMagnitude.toFixed(1) + ' ≤ ' + 10}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[280px] p-0">
