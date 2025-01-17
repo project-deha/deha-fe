@@ -48,7 +48,11 @@ const formSchema = z
         email: z.string().email('Geçerli bir e-posta adresi giriniz'),
         password: z
             .string()
-            .min(12, 'Şifre en az 12 karakter olmalıdır'),
+            .min(12, 'Şifre en az 12 karakter olmalıdır')
+            .refine((val) => /[A-Z]/.test(val), 'Şifre en az bir büyük harf içermelidir')
+            .refine((val) => /[a-z]/.test(val), 'Şifre en az bir küçük harf içermelidir')
+            .refine((val) => /\d/.test(val), 'Şifre en az bir rakam içermelidir')
+            .refine((val) => /[@$!%*?&]/.test(val), 'Şifre en az bir özel karakter (@$!%*?&) içermelidir'),
         confirmPassword: z.string(),
         terms: z
             .boolean()
