@@ -4,16 +4,18 @@ import { useEffect, useState } from 'react';
 import { useFilterStore } from '@/store/filterStore';
 import PredictionMap from '@/components/map/PredictionMap';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/config/axios';
 
 interface PredictionData {
-    occurrenceDate: string;
+    id: string;
+    magnitude: number;
+    depth: number;
     location: {
         city: string;
         latitude: number;
         longitude: number;
     };
-    depth: number;
-    magnitude: number;
+    occurrenceDate: string;
 }
 
 export default function MapPage() {
@@ -22,101 +24,18 @@ export default function MapPage() {
     const [data, setData] = useState<PredictionData[]>([]);
     const [filteredData, setFilteredData] = useState<PredictionData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Veri yükleme simülasyonu
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+            setError(null);
             try {
-                // TODO: API'den veri çekme işlemi burada yapılacak
-                // Şimdilik örnek veri
-                const mockData: PredictionData[] = [
-                    // İstanbul için örnek veriler
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 10.5,
-                        magnitude: 5.2
-                    },
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 8.2,
-                        magnitude: 4.8
-                    },
-                    {
-                        occurrenceDate: '2024-03-21',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 12.3,
-                        magnitude: 5.5
-                    },
-                    {
-                        occurrenceDate: '2024-03-21',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 9.8,
-                        magnitude: 4.2
-                    },
-                    {
-                        occurrenceDate: '2024-03-22',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 11.1,
-                        magnitude: 5.8
-                    },
-                    // Diğer şehirler için örnek veriler
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'Ankara',
-                            latitude: 39.9334,
-                            longitude: 32.8597
-                        },
-                        depth: 12.3,
-                        magnitude: 5.0
-                    },
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'Ankara',
-                            latitude: 39.9334,
-                            longitude: 32.8597
-                        },
-                        depth: 9.8,
-                        magnitude: 4.2
-                    },
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'İzmir',
-                            latitude: 38.4237,
-                            longitude: 27.1428
-                        },
-                        depth: 11.1,
-                        magnitude: 4.5
-                    }
-                ];
-                setData(mockData);
+                const response = await axiosInstance.get('/api/v1/predicted-earthquake/most-severe');
+                setData(response.data);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);
+                setError('Veriler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
             } finally {
                 setLoading(false);
             }
@@ -203,32 +122,11 @@ export default function MapPage() {
 
     // Harita için veri hazırlama
     const mapData = getHighestMagnitudePredictions().map(prediction => ({
-        city: prediction.location.city,
-        riskLevel: prediction.magnitude / 10,
-        color: getColorByMagnitude(prediction.magnitude),
+        id: prediction.id,
         magnitude: prediction.magnitude,
         depth: prediction.depth,
-        date: prediction.occurrenceDate,
-        // Popup içeriği için ek bilgiler
-        popupContent: (
-            <div className="p-2">
-                <h3 className="font-bold text-lg mb-2">{prediction.location.city}</h3>
-                <div className="space-y-1">
-                    <p className="text-sm">
-                        <span className="font-semibold">En Yüksek Büyüklük:</span> {prediction.magnitude.toFixed(1)}
-                    </p>
-                    <p className="text-sm">
-                        <span className="font-semibold">Tarih:</span> {new Date(prediction.occurrenceDate).toLocaleDateString('tr-TR')}
-                    </p>
-                </div>
-                <button
-                    onClick={() => handleViewDetails(prediction.location.city)}
-                    className="mt-3 w-full bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
-                >
-                    Detayları Görüntüle
-                </button>
-            </div>
-        )
+        location: prediction.location,
+        occurrenceDate: prediction.occurrenceDate
     }));
 
     return (
@@ -241,11 +139,18 @@ export default function MapPage() {
 
             {/* Harita */}
             <div className="bg-white rounded-lg shadow-md p-6">
+                {error && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-red-600">{error}</p>
+                    </div>
+                )}
+
                 {/* Harita her zaman görünsün */}
                 <PredictionMap
                     predictionData={mapData}
                     onCitySelect={handleCitySelect}
                 />
+
                 {/* Eğer hiç marker yoksa bilgi mesajı göster */}
                 {!loading && filteredData.length === 0 && (
                     <div className="flex justify-center items-center h-32">
@@ -257,6 +162,7 @@ export default function MapPage() {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                     </div>
                 )}
+
                 {/* Renk Açıklamaları */}
                 <div className="mt-4 flex flex-wrap gap-4 justify-center">
                     <div className="flex items-center">

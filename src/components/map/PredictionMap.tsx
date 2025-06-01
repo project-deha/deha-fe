@@ -8,10 +8,15 @@ import { useRouter } from 'next/navigation';
 const geoUrl = '/turkey-provinces.json';
 
 interface PredictionData {
-    city: string;
-    riskLevel: number; // 0-1 arası risk seviyesi
+    id: string;
     magnitude: number;
-    date: string;
+    depth: number;
+    location: {
+        city: string;
+        latitude: number;
+        longitude: number;
+    };
+    occurrenceDate: string;
 }
 
 interface PredictionMapProps {
@@ -41,20 +46,32 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
     const [selectedCity, setSelectedCity] = useState<string | null>(null);
     const [showPopup, setShowPopup] = useState(false);
     const [popupPosition, setPopupPosition] = useState<{ x: number, y: number } | null>(null);
+    const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+    const [hoverPopupPosition, setHoverPopupPosition] = useState<{ x: number, y: number } | null>(null);
 
     const colorScale = (cityName: string) => {
         const found = predictionData.find(
-            (d) => normalize(d.city) === normalize(cityName)
+            (d) => normalize(d.location.city) === normalize(cityName)
         );
         if (!found) return '#e0e0e0';
-        const risk = found.riskLevel;
-        const red = 255;
-        const green = Math.round(255 * (1 - risk));
-        return `rgb(${red},${green},0)`;
+        const magnitude = found.magnitude;
+        // Magnitude-based color scale
+        if (magnitude >= 7.0) return '#FF0000'; // Kırmızı
+        if (magnitude >= 6.0) return '#FF4500'; // Turuncu-Kırmızı
+        if (magnitude >= 5.0) return '#FFA500'; // Turuncu
+        if (magnitude >= 4.0) return '#FFD700'; // Altın Sarısı
+        return '#90EE90'; // Açık Yeşil
+    };
+
+    const getHoverColor = (baseColor: string) => {
+        // Convert hex to rgba with 0.7 opacity
+        const r = parseInt(baseColor.slice(1, 3), 16);
+        const g = parseInt(baseColor.slice(3, 5), 16);
+        const b = parseInt(baseColor.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, 0.7)`;
     };
 
     const handleCityClick = (cityName: string, geo: any) => {
-        // Önce popup'ı göster
         setSelectedCity(cityName);
         setShowPopup(true);
         const centroid = geoCentroid(geo);
@@ -66,10 +83,26 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
             }
         }
 
-        // Filtrelemeyi biraz geciktir
         setTimeout(() => {
             onCitySelect?.(cityName);
         }, 100);
+    };
+
+    const handleCityHover = (cityName: string, geo: any, isHovering: boolean) => {
+        if (isHovering) {
+            setHoveredCity(cityName);
+            const centroid = geoCentroid(geo);
+            if (centroid) {
+                const projected = projection(centroid);
+                if (projected) {
+                    const [x, y] = projected;
+                    setHoverPopupPosition({ x, y });
+                }
+            }
+        } else {
+            setHoveredCity(null);
+            setHoverPopupPosition(null);
+        }
     };
 
     const handleViewDetails = (cityName: string) => {
@@ -100,6 +133,8 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                     key={geo.rsmKey}
                                     geography={geo}
                                     onClick={() => handleCityClick(cityName, geo)}
+                                    onMouseEnter={() => handleCityHover(cityName, geo, true)}
+                                    onMouseLeave={() => handleCityHover(cityName, geo, false)}
                                     style={{
                                         default: {
                                             fill: colorScale(cityName),
@@ -109,11 +144,11 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                             cursor: 'pointer',
                                         },
                                         hover: {
-                                            fill: '#2563eb',
+                                            fill: 'rgba(227, 236, 240, 0.7)',
                                             outline: 'none',
                                         },
                                         pressed: {
-                                            fill: '#2563eb',
+                                            fill: 'rgba(128, 128, 128, 0.7)',
                                             outline: 'none',
                                         },
                                     }}
@@ -124,7 +159,50 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                 </Geographies>
             </ComposableMap>
 
-            {/* Popup */}
+            {/* Hover Popup */}
+            {hoveredCity && hoverPopupPosition && (
+                <div
+                    className="absolute z-40"
+                    style={{
+                        left: hoverPopupPosition.x,
+                        top: hoverPopupPosition.y,
+                        transform: 'translate(-50%, -100%)',
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <div className="bg-white rounded-lg shadow-lg p-4 min-w-[180px] relative">
+                        <h3 className="text-lg font-bold mb-2">{hoveredCity}</h3>
+                        {(() => {
+                            const found = predictionData.find(
+                                (d) => normalize(d.location.city) === normalize(hoveredCity)
+                            );
+                            if (found) {
+                                return (
+                                    <div className="space-y-1">
+                                        <div>
+                                            <span className="font-semibold">Büyüklük:</span>{' '}
+                                            <span>{found.magnitude.toFixed(1)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Derinlik:</span>{' '}
+                                            <span>{found.depth.toFixed(1)} km</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Tarih:</span>{' '}
+                                            <span>{new Date(found.occurrenceDate).toLocaleDateString('tr-TR')}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <p className="text-gray-600">Bu şehir için henüz tahmin verisi bulunmamaktadır.</p>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* Click Popup */}
             {showPopup && selectedCity && popupPosition && (
                 <div
                     className="absolute z-50"
@@ -145,7 +223,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                         <h2 className="text-xl font-bold mb-2">{selectedCity}</h2>
                         {(() => {
                             const found = predictionData.find(
-                                (d) => normalize(d.city) === normalize(selectedCity)
+                                (d) => normalize(d.location.city) === normalize(selectedCity)
                             );
                             if (found) {
                                 return (
@@ -155,8 +233,12 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                             <span>{found.magnitude.toFixed(1)}</span>
                                         </div>
                                         <div>
+                                            <span className="font-semibold">Derinlik:</span>{' '}
+                                            <span>{found.depth.toFixed(1)} km</span>
+                                        </div>
+                                        <div>
                                             <span className="font-semibold">Tarih:</span>{' '}
-                                            <span>{new Date(found.date).toLocaleDateString('tr-TR')}</span>
+                                            <span>{new Date(found.occurrenceDate).toLocaleDateString('tr-TR')}</span>
                                         </div>
                                         <button
                                             onClick={() => handleViewDetails(selectedCity)}
