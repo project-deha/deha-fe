@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import axiosInstance from '@/config/axios';
 
 interface EmailVerificationModalProps {
     isOpen: boolean;
@@ -12,25 +13,75 @@ interface EmailVerificationModalProps {
 export default function EmailVerificationModal({ isOpen, onClose, email, onVerificationSuccess }: EmailVerificationModalProps) {
     const [verificationCode, setVerificationCode] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
-        // Statik doğrulama kodu: 123456
-        if (verificationCode === '123456') {
+        try {
+            await axiosInstance.post('/auth/verify', {
+                verificationCode: parseInt(verificationCode)
+            });
+
             onVerificationSuccess();
-        } else {
-            setError('Doğrulama kodu hatalı. Lütfen tekrar deneyin.');
+        } catch (error: any) {
+            console.error('Doğrulama hatası:', error);
+            let errorMessage = 'Doğrulama kodu hatalı. Lütfen tekrar deneyin.';
+
+            if (error.response) {
+                if (error.response.data?.error) {
+                    const errorMap = error.response.data.error;
+                    errorMessage = Object.values(errorMap)[0] as string;
+                } else {
+                    switch (error.response.status) {
+                        case 400:
+                            errorMessage = 'Geçersiz doğrulama kodu.';
+                            break;
+                        case 404:
+                            errorMessage = 'Doğrulama kodu bulunamadı.';
+                            break;
+                        case 429:
+                            errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
+                            break;
+                        case 500:
+                            errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
+                            break;
+                    }
+                }
+            }
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleResendCode = () => {
+    const handleResendCode = async () => {
         setError('');
         setVerificationCode('');
-        alert('Yeni doğrulama kodu gönderildi! (Test için kod: 123456)');
+        setIsLoading(true);
+
+        try {
+            await axiosInstance.post('/auth/resend-verification', {
+                email: email
+            });
+            alert('Yeni doğrulama kodu gönderildi!');
+        } catch (error: any) {
+            console.error('Kod gönderme hatası:', error);
+            let errorMessage = 'Kod gönderilemedi. Lütfen daha sonra tekrar deneyin.';
+
+            if (error.response?.data?.error) {
+                const errorMap = error.response.data.error;
+                errorMessage = Object.values(errorMap)[0] as string;
+            }
+
+            alert(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -54,9 +105,6 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onVerif
                     <p className="text-gray-600">
                         {email} adresine gönderilen 6 haneli doğrulama kodunu giriniz.
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                        (Test için doğrulama kodu: 123456)
-                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,6 +121,7 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onVerif
                             placeholder="6 haneli kod"
                             maxLength={6}
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -82,17 +131,18 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onVerif
 
                     <button
                         type="submit"
-                        disabled={verificationCode.length !== 6}
+                        disabled={verificationCode.length !== 6 || isLoading}
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Doğrula
+                        {isLoading ? 'Doğrulanıyor...' : 'Doğrula'}
                     </button>
 
                     <div className="text-center">
                         <button
                             type="button"
                             onClick={handleResendCode}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
+                            disabled={isLoading}
+                            className="text-blue-600 hover:text-blue-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Yeni kod gönder
                         </button>

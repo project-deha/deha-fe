@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import EmailVerificationModal from './EmailVerificationModal';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/config/api';
+import axiosInstance from '@/config/axios';
+import { useUserStore } from '@/store/userStore';
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -114,35 +117,117 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
         if (!validateForm()) return;
 
         if (mode === 'register') {
-            // Kayıt başarılı, doğrulama modalını göster
-            setRegisteredEmail(formData.email);
-            setShowVerification(true);
-        } else {
             try {
-                // Test için basit giriş kontrolü
-                if (formData.email === 'test@test.com' && formData.password === '123456') {
-                    // Kullanıcı bilgilerini localStorage'a kaydet
-                    const user = {
-                        name: 'Test',
-                        surname: 'Kullanıcı',
-                        email: 'test@test.com',
-                    };
-                    localStorage.setItem('user', JSON.stringify(user));
-                    onClose();
-                    // Yönlendirme öncesi kısa bir gecikme ekle
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    router.push('/user/home');
-                } else {
-                    setErrors(prev => ({
-                        ...prev,
-                        email: 'Giriş başarısız oldu. Lütfen bilgilerinizi kontrol edin.'
-                    }));
+                const registerResponse = await axiosInstance.post('/auth/register', {
+                    email: formData.email,
+                    firstName: formData.name,
+                    lastName: formData.surname,
+                    password: formData.password
+                });
+
+                // Kayıt başarılı, otomatik giriş yap
+                try {
+                    const loginResponse = await axiosInstance.post('/auth/login', {
+                        email: formData.email,
+                        password: formData.password
+                    });
+
+                    // GenericResponse'dan UserDto'yu al ve store'a kaydet
+                    const userData = loginResponse.data.data;
+                    useUserStore.getState().setUser(userData);
+
+                    // Doğrulama modalını göster
+                    setRegisteredEmail(formData.email);
+                    setShowVerification(true);
+                } catch (loginError: any) {
+                    console.error('Otomatik giriş hatası:', loginError);
+                    // Kayıt başarılı ama giriş başarısız olsa bile doğrulama modalını göster
+                    setRegisteredEmail(formData.email);
+                    setShowVerification(true);
                 }
-            } catch (error) {
-                console.error('Giriş hatası:', error);
+            } catch (error: any) {
+                console.error('Kayıt hatası:', error);
+                let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+
+                if (error.response) {
+                    // Backend'den gelen hata mesajını kullan
+                    if (error.response.data?.error) {
+                        const errorMap = error.response.data.error;
+                        errorMessage = Object.values(errorMap)[0] as string;
+                    } else {
+                        switch (error.response.status) {
+                            case 400:
+                                errorMessage = 'Geçersiz kayıt bilgileri.';
+                                break;
+                            case 409:
+                                errorMessage = 'Bu email adresi zaten kullanımda.';
+                                break;
+                            case 429:
+                                errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
+                                break;
+                            case 500:
+                                errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
+                                break;
+                        }
+                    }
+                } else if (error.request) {
+                    errorMessage = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
+                }
+
                 setErrors(prev => ({
                     ...prev,
-                    email: 'Bir hata oluştu. Lütfen tekrar deneyin.'
+                    email: errorMessage
+                }));
+            }
+        } else {
+            try {
+                const response = await axiosInstance.post('/auth/login', {
+                    email: formData.email,
+                    password: formData.password
+                });
+
+                // GenericResponse'dan UserDto'yu al ve store'a kaydet
+                const userData = response.data.data;
+                useUserStore.getState().setUser(userData);
+                onClose();
+                // Yönlendirme öncesi kısa bir gecikme ekle
+                await new Promise(resolve => setTimeout(resolve, 100));
+                router.push('/user/home');
+            } catch (error: any) {
+                console.error('Giriş hatası:', error);
+                let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+
+                if (error.response) {
+                    // Backend'den gelen hata mesajını kullan
+                    if (error.response.data?.error) {
+                        const errorMap = error.response.data.error;
+                        errorMessage = Object.values(errorMap)[0] as string;
+                    } else {
+                        switch (error.response.status) {
+                            case 401:
+                                errorMessage = 'Geçersiz email veya şifre.';
+                                break;
+                            case 403:
+                                errorMessage = 'Hesabınız aktif değil.';
+                                break;
+                            case 404:
+                                errorMessage = 'Kullanıcı bulunamadı.';
+                                break;
+                            case 429:
+                                errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
+                                break;
+                            case 500:
+                                errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
+                                break;
+                        }
+                    }
+                } else if (error.request) {
+                    errorMessage = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
+                }
+
+                setErrors(prev => ({
+                    ...prev,
+                    email: errorMessage
                 }));
             }
         }

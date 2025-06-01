@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/store/userStore';
 
 const predictionsSubmenu = [
     { label: 'Harita', href: '/user/predictions/map', icon: <span className="mr-2">🗺️</span> },
@@ -29,13 +30,7 @@ export default function UserMenu() {
     const [accordion, setAccordion] = useState<string | null>(null);
     const router = useRouter();
     const menuRef = useRef<HTMLDivElement>(null);
-
-    // user bilgisini doğrudan localStorage'dan oku
-    let user: { name: string; surname: string; email: string } | null = null;
-    if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('user');
-        if (stored) user = JSON.parse(stored);
-    }
+    const user = useUserStore((state) => state.user);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -58,7 +53,7 @@ export default function UserMenu() {
     }, [drawerOpen]);
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        useUserStore.getState().clearUser();
         setDrawerOpen(false);
         router.push('/public/home');
     };
@@ -71,9 +66,11 @@ export default function UserMenu() {
                 className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50 hover:bg-blue-100 transition border border-blue-100"
             >
                 <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-                    {user ? user.name.charAt(0) : 'U'}
+                    {user ? user.firstName.charAt(0) : 'U'}
                 </span>
-                <span className="hidden md:block font-medium text-gray-700">{user ? user.name + ' ' + user.surname : 'Kullanıcı'}</span>
+                <span className="hidden md:block font-medium text-gray-700">
+                    {user ? `${user.firstName} ${user.lastName}` : 'Kullanıcı'}
+                </span>
                 <svg className="w-4 h-4 text-gray-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
                 </svg>
@@ -87,9 +84,11 @@ export default function UserMenu() {
                         <div className="flex items-center justify-between px-6 py-4 border-b">
                             <div className="flex items-center gap-2">
                                 <span className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl">
-                                    {user ? user.name.charAt(0) : 'U'}
+                                    {user ? user.firstName.charAt(0) : 'U'}
                                 </span>
-                                <span className="font-semibold text-gray-800">{user ? user.name + ' ' + user.surname : 'Kullanıcı'}</span>
+                                <span className="font-semibold text-gray-800">
+                                    {user ? `${user.firstName} ${user.lastName}` : 'Kullanıcı'}
+                                </span>
                             </div>
                             <button onClick={() => setDrawerOpen(false)} className="text-gray-500 hover:text-red-600 p-2">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
