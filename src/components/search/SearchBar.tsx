@@ -2,6 +2,8 @@
 
 import { useState, useEffect, ReactElement } from 'react';
 import { useFilterStore } from '@/store/filterStore';
+import { usePredictedEarthquakeStore } from '@/store/predictedEarthquakeStore';
+import { predictedEarthquakeService } from '@/services/predictedEarthquakeService';
 import { usePathname } from 'next/navigation';
 
 interface SearchBarProps {
@@ -26,6 +28,8 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         maxMagnitude,
         setFilters
     } = useFilterStore();
+
+    const { setEarthquakes, setLoading, setError } = usePredictedEarthquakeStore();
 
     const [tempFilters, setTempFilters] = useState({
         startDate,
@@ -71,12 +75,26 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         }));
     };
 
-    const handleApplyFilters = () => {
+    const handleApplyFilters = async () => {
         setFilters(tempFilters);
         if (onFilterChange) {
             onFilterChange(tempFilters);
         }
         setActiveDropdown(null);
+
+        if (mode === 'prediction') {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await predictedEarthquakeService.getFilteredEarthquakes(tempFilters);
+                setEarthquakes(response);
+            } catch (error) {
+                setError('Filtreleme sırasında bir hata oluştu');
+                console.error('Filter error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
     };
 
     const getActiveFiltersCount = (type: 'date' | 'city' | 'magnitude') => {
