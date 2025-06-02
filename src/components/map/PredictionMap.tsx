@@ -139,12 +139,12 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                         default: {
                                             fill: colorScale(cityName),
                                             outline: 'none',
-                                            stroke: selectedCity === cityName ? '#2563eb' : '#fff',
+                                            stroke: selectedCity === cityName ? 'hsla(198, 30.20%, 91.60%, 0.70)' : '#fff',
                                             strokeWidth: selectedCity === cityName ? 2 : 0.5,
                                             cursor: 'pointer',
                                         },
                                         hover: {
-                                            fill: 'rgba(227, 236, 240, 0.7)',
+                                            fill: 'hsla(198, 30.20%, 91.60%, 0.70)',
                                             outline: 'none',
                                         },
                                         pressed: {

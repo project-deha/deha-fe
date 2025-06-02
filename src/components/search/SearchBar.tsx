@@ -5,6 +5,7 @@ import { useFilterStore } from '@/store/filterStore';
 import { usePredictedEarthquakeStore } from '@/store/predictedEarthquakeStore';
 import { predictedEarthquakeService } from '@/services/predictedEarthquakeService';
 import { usePathname } from 'next/navigation';
+import { turkishCities } from '@/constants/TurkishCities';
 
 interface SearchBarProps {
     onFilterChange?: (filters: {
@@ -41,6 +42,7 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
 
     const [activeDropdown, setActiveDropdown] = useState<'date' | 'city' | 'magnitude' | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -61,14 +63,7 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         });
     }, [startDate, endDate, city, minMagnitude, maxMagnitude]);
 
-    let cities = [
-        'İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Adana',
-        'Gaziantep', 'Konya', 'Mersin', 'Diyarbakır', 'Kayseri',
-        'Eskişehir', 'Samsun', 'Denizli', 'Şanlıurfa', 'Malatya'
-    ];
-
-    // Convert cities to Turkish uppercase format
-    cities = cities.map(city => city.toLocaleUpperCase('tr-TR'));
+    const cities = turkishCities;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -92,6 +87,11 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
             onFilterChange(filtersToApply);
         }
         setActiveDropdown(null);
+
+        // Eğer harita sayfasındaysak API isteği atma
+        if (pathname === '/user/predictions/map') {
+            return;
+        }
 
         if (mode === 'prediction') {
             try {

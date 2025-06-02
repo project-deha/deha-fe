@@ -365,7 +365,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR75",
-        "name": "Ardahan"
+        "name": "ARDAHAN"
       },
       "id": 1
     },
@@ -785,7 +785,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR08",
-        "name": "Artvin"
+        "name": "ARTVİN"
       },
       "id": 2
     },
@@ -1185,7 +1185,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR73",
-        "name": "Şırnak"
+        "name": "ŞIRNAK"
       },
       "id": 3
     },
@@ -1805,7 +1805,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR30",
-        "name": "Hakkari"
+        "name": "HAKKARİ"
       },
       "id": 4
     },
@@ -2161,7 +2161,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR76",
-        "name": "Iğdır"
+        "name": "IĞDIR"
       },
       "id": 5
     },
@@ -2685,7 +2685,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR04",
-        "name": "Ağrı"
+        "name": "AĞRI"
       },
       "id": 6
     },
@@ -3429,7 +3429,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR65",
-        "name": "Van"
+        "name": "VAN"
       },
       "id": 7
     },
@@ -4013,7 +4013,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR39",
-        "name": "Kırklareli"
+        "name": "KIRKLARELİ"
       },
       "id": 8
     },
@@ -4773,7 +4773,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR22",
-        "name": "Edirne"
+        "name": "EDİRNE"
       },
       "id": 9
     },
@@ -5193,7 +5193,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR36",
-        "name": "Kars"
+        "name": "KARS"
       },
       "id": 10
     },
@@ -5425,7 +5425,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR47",
-        "name": "Mardin"
+        "name": "MARDİN"
       },
       "id": 11
     },
@@ -6229,7 +6229,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR63",
-        "name": "Şanlıurfa"
+        "name": "ŞANLIURFA"
       },
       "id": 12
     },
@@ -6409,7 +6409,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR79",
-        "name": "Kilis"
+        "name": "KİLİS"
       },
       "id": 13
     },
@@ -6873,7 +6873,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR27",
-        "name": "Gaziantep"
+        "name": "GAZİANTEP"
       },
       "id": 14
     },
@@ -7561,7 +7561,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR31",
-        "name": "Hatay"
+        "name": "HATAY"
       },
       "id": 15
     },
@@ -8207,7 +8207,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR34",
-        "name": "İstanbul"
+        "name": "İSTANBUL"
       },
       "id": 16
     },
@@ -8511,7 +8511,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR59",
-        "name": "Tekirdağ"
+        "name": "TEKİRDAĞ"
       },
       "id": 17
     },
@@ -9721,7 +9721,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR17",
-        "name": "Çanakkale"
+        "name": "ÇANAKKALE"
       },
       "id": 18
     },
@@ -9993,7 +9993,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR53",
-        "name": "Rize"
+        "name": "RİZE"
       },
       "id": 19
     },
@@ -10353,7 +10353,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR61",
-        "name": "Trabzon"
+        "name": "TRABZON"
       },
       "id": 20
     },
@@ -10769,7 +10769,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR28",
-        "name": "Giresun"
+        "name": "GİRESUN"
       },
       "id": 21
     },
@@ -11177,7 +11177,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR52",
-        "name": "Ordu"
+        "name": "ORDU"
       },
       "id": 22
     },
@@ -11885,7 +11885,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR55",
-        "name": "Samsun"
+        "name": "SAMSUN"
       },
       "id": 23
     },
@@ -12469,7 +12469,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR57",
-        "name": "Sinop"
+        "name": "SİNOP"
       },
       "id": 24
     },
@@ -12865,7 +12865,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR37",
-        "name": "Kastamonu"
+        "name": "KASTAMONU"
       },
       "id": 25
     },
@@ -13081,7 +13081,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR74",
-        "name": "Bartın"
+        "name": "BARTIN"
       },
       "id": 26
     },
@@ -13261,7 +13261,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR67",
-        "name": "Zonguldak"
+        "name": "ZONGULDAK"
       },
       "id": 27
     },
@@ -13457,7 +13457,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR81",
-        "name": "Düzce"
+        "name": "DÜZCE"
       },
       "id": 28
     },
@@ -13757,7 +13757,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR54",
-        "name": "Sakarya"
+        "name": "SAKARYA"
       },
       "id": 29
     },
@@ -14309,7 +14309,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR41",
-        "name": "Kocaeli"
+        "name": "KOCAELİ"
       },
       "id": 30
     },
@@ -14441,7 +14441,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR77",
-        "name": "Yalova"
+        "name": "YALOVA"
       },
       "id": 31
     },
@@ -14993,7 +14993,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR16",
-        "name": "Bursa"
+        "name": "BURSA"
       },
       "id": 32
     },
@@ -16167,7 +16167,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR10",
-        "name": "Balıkesir"
+        "name": "BALIKESİR"
       },
       "id": 33
     },
@@ -17927,7 +17927,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR35",
-        "name": "İzmir"
+        "name": "İZMİR"
       },
       "id": 34
     },
@@ -18487,7 +18487,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR09",
-        "name": "Aydın"
+        "name": "AYDIN"
       },
       "id": 35
     },
@@ -21475,7 +21475,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR48",
-        "name": "Muğla"
+        "name": "MUĞLA"
       },
       "id": 36
     },
@@ -22687,7 +22687,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR07",
-        "name": "Antalya"
+        "name": "ANTALYA"
       },
       "id": 37
     },
@@ -23551,7 +23551,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR33",
-        "name": "Mersin"
+        "name": "MERSİN"
       },
       "id": 38
     },
@@ -24243,7 +24243,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR01",
-        "name": "Adana"
+        "name": "ADANA"
       },
       "id": 39
     },
@@ -24575,7 +24575,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR14",
-        "name": "Bolu"
+        "name": "BOLU"
       },
       "id": 40
     },
@@ -25327,7 +25327,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR06",
-        "name": "Ankara"
+        "name": "ANKARA"
       },
       "id": 41
     },
@@ -25595,7 +25595,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR11",
-        "name": "Bilecik"
+        "name": "BİLECİK"
       },
       "id": 42
     },
@@ -26063,7 +26063,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR26",
-        "name": "Eskişehir"
+        "name": "ESKİŞEHİR"
       },
       "id": 43
     },
@@ -26379,7 +26379,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR18",
-        "name": "Çankırı"
+        "name": "ÇANKIRI"
       },
       "id": 44
     },
@@ -26571,7 +26571,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR78",
-        "name": "Karabük"
+        "name": "KARABÜK"
       },
       "id": 45
     },
@@ -26983,7 +26983,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR60",
-        "name": "Tokat"
+        "name": "TOKAT"
       },
       "id": 46
     },
@@ -27655,7 +27655,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR58",
-        "name": "Sivas"
+        "name": "SİVAS"
       },
       "id": 47
     },
@@ -28111,7 +28111,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR19",
-        "name": "Çorum"
+        "name": "ÇORUM"
       },
       "id": 48
     },
@@ -28479,7 +28479,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR05",
-        "name": "Amasya"
+        "name": "AMASYA"
       },
       "id": 49
     },
@@ -28855,7 +28855,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR43",
-        "name": "Kütahya"
+        "name": "KÜTAHYA"
       },
       "id": 50
     },
@@ -29623,7 +29623,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR42",
-        "name": "Konya"
+        "name": "KONYA"
       },
       "id": 51
     },
@@ -29999,7 +29999,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR70",
-        "name": "Karaman"
+        "name": "KARAMAN"
       },
       "id": 52
     },
@@ -30243,7 +30243,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR51",
-        "name": "Niğde"
+        "name": "NİĞDE"
       },
       "id": 53
     },
@@ -30587,7 +30587,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR38",
-        "name": "Kayseri"
+        "name": "KAYSERİ"
       },
       "id": 54
     },
@@ -30927,7 +30927,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR32",
-        "name": "Isparta"
+        "name": "ISPARTA"
       },
       "id": 55
     },
@@ -31415,7 +31415,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR45",
-        "name": "Manisa"
+        "name": "MANİSA"
       },
       "id": 56
     },
@@ -31923,7 +31923,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR20",
-        "name": "Denizli"
+        "name": "DENİZLİ"
       },
       "id": 57
     },
@@ -32239,7 +32239,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR15",
-        "name": "Burdur"
+        "name": "BURDUR"
       },
       "id": 58
     },
@@ -32499,7 +32499,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR68",
-        "name": "Aksaray"
+        "name": "AKSARAY"
       },
       "id": 59
     },
@@ -32807,7 +32807,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR50",
-        "name": "Nevşehir"
+        "name": "NEVŞEHİR"
       },
       "id": 60
     },
@@ -33203,7 +33203,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR66",
-        "name": "Yozgat"
+        "name": "YOZGAT"
       },
       "id": 61
     },
@@ -33467,7 +33467,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR40",
-        "name": "Kırşehir"
+        "name": "KIRŞEHİR"
       },
       "id": 62
     },
@@ -33743,7 +33743,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR64",
-        "name": "Uşak"
+        "name": "UŞAK"
       },
       "id": 63
     },
@@ -34331,7 +34331,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR24",
-        "name": "Erzincan"
+        "name": "ERZİNCAN"
       },
       "id": 64
     },
@@ -34787,7 +34787,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR62",
-        "name": "Tunceli"
+        "name": "TUNCELİ"
       },
       "id": 65
     },
@@ -35219,7 +35219,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR03",
-        "name": "Afyonkarahisar"
+        "name": "AFYONKARAHİSAR"
       },
       "id": 66
     },
@@ -35391,7 +35391,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR71",
-        "name": "Kırıkkale"
+        "name": "KIRIKKALE"
       },
       "id": 67
     },
@@ -35759,7 +35759,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR46",
-        "name": "Kahramanmaraş"
+        "name": "KAHRAMANMARAŞ"
       },
       "id": 68
     },
@@ -36107,7 +36107,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR49",
-        "name": "Muş"
+        "name": "MUŞ"
       },
       "id": 69
     },
@@ -36707,7 +36707,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR25",
-        "name": "Erzurum"
+        "name": "ERZURUM"
       },
       "id": 70
     },
@@ -37319,7 +37319,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR44",
-        "name": "Malatya"
+        "name": "MALATYA"
       },
       "id": 71
     },
@@ -37903,7 +37903,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR23",
-        "name": "Elazığ"
+        "name": "ELAZIĞ"
       },
       "id": 72
     },
@@ -38219,7 +38219,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR13",
-        "name": "Bitlis"
+        "name": "BİTLİS"
       },
       "id": 73
     },
@@ -38579,7 +38579,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR12",
-        "name": "Bingöl"
+        "name": "BİNGÖL"
       },
       "id": 74
     },
@@ -38807,7 +38807,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR80",
-        "name": "Osmaniye"
+        "name": "OSMANİYE"
       },
       "id": 75
     },
@@ -39371,7 +39371,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR02",
-        "name": "Adıyaman"
+        "name": "ADIYAMAN"
       },
       "id": 76
     },
@@ -39815,7 +39815,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR21",
-        "name": "Diyarbakır"
+        "name": "DİYARBAKIR"
       },
       "id": 77
     },
@@ -40019,7 +40019,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR72",
-        "name": "Batman"
+        "name": "BATMAN"
       },
       "id": 78
     },
@@ -40243,7 +40243,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR56",
-        "name": "Siirt"
+        "name": "SİİRT"
       },
       "id": 79
     },
@@ -40443,7 +40443,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR69",
-        "name": "Bayburt"
+        "name": "BAYBURT"
       },
       "id": 80
     },
@@ -40747,7 +40747,7 @@
       "properties": {
         "source": "https://simplemaps.com",
         "id": "TR29",
-        "name": "Gümüşhane"
+        "name": "GÜMÜŞHANE"
       },
       "id": 81
     }

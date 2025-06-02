@@ -5,6 +5,7 @@ import { useFilterStore } from '@/store/filterStore';
 import PredictionMap from '@/components/map/PredictionMap';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/config/axios';
+import { predictedEarthquakeService } from '@/services/predictedEarthquakeService';
 
 interface PredictionData {
     id: string;
@@ -27,12 +28,32 @@ export default function PredictionsMapPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // İlk yüklemede most-severe, filtreler değişince filter endpointi
         const fetchData = async () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axiosInstance.get('/predicted-earthquake/most-severe');
-                setData(response.data);
+                // Eğer filtreler default ise most-severe, değilse filter endpointi
+                const isDefaultFilter = !startDate && !endDate && !city && minMagnitude === 0 && maxMagnitude === 10;
+                let responseData;
+                if (isDefaultFilter) {
+                    const response = await axiosInstance.get('/predicted-earthquake/most-severe');
+                    responseData = response.data;
+                } else {
+                    // Table sayfasındaki gibi filter endpointi
+                    const response = await predictedEarthquakeService.getFilteredEarthquakes({
+                        startDate,
+                        endDate,
+                        city,
+                        minMagnitude,
+                        maxMagnitude,
+                        page: 0,
+                        size: 1000 // Harita için yeterli büyüklükte bir sayı
+                    });
+                    // Table sayfasında response.data, burada response olabilir
+                    responseData = response.content || response; // API'nin döndürdüğü yapıya göre
+                }
+                setData(responseData);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);
                 setError('Veriler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
@@ -42,7 +63,7 @@ export default function PredictionsMapPage() {
         };
 
         fetchData();
-    }, []);
+    }, [startDate, endDate, city, minMagnitude, maxMagnitude]);
 
     // Filtreleme
     useEffect(() => {
@@ -76,7 +97,7 @@ export default function PredictionsMapPage() {
     const getHighestMagnitudePredictions = () => {
         const cityMap = new Map<string, PredictionData>();
 
-        filteredData.forEach(prediction => {
+        data.forEach(prediction => {
             const currentCity = prediction.location.city;
             const existingPrediction = cityMap.get(currentCity);
 

@@ -1,51 +1,52 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Map, Table, LineChart } from 'lucide-react';
 
 const menuItems = [
     {
-        title: 'Tahmin Depremleri',
+        title: 'Deprem Tahminleri',
         links: [
-            { label: 'Harita', href: '/user/predictions/map' },
-            { label: 'Tablo', href: '/user/predictions/table' },
-            { label: 'Grafik', href: '/user/predictions/graph' },
+            { label: 'Harita', href: '/user/predictions/map', icon: <Map size={18} /> },
+            { label: 'Tablo', href: '/user/predictions/table', icon: <Table size={18} /> },
+            { label: 'Grafik', href: '/user/predictions/graph', icon: <LineChart size={18} /> },
         ],
         icon: '🌐',
     },
     {
         title: 'Geçmiş Depremler',
         links: [
-            { label: 'Harita', href: '/user/history/map' },
-            { label: 'Tablo', href: '/user/history/table' },
-            { label: 'Grafik', href: '/user/history/graph' },
+            { label: 'Harita', href: '/user/history/map', icon: <Map size={18} /> },
+            { label: 'Tablo', href: '/user/history/table', icon: <Table size={18} /> },
+            { label: 'Grafik', href: '/user/history/graph', icon: <LineChart size={18} /> },
         ],
         icon: '🕑',
     },
     {
         title: 'Alarmlar',
         links: [
-            { label: 'Alarmlar', href: '/user/alarms' },
+            { label: 'Alarmlar', href: '/user/alarms', icon: null },
         ],
         icon: '⏰',
     },
     {
         title: 'Raporlar',
         links: [
-            { label: 'Raporlar', href: '/user/reports' },
+            { label: 'Raporlar', href: '/user/reports', icon: null },
         ],
         icon: '📄',
     },
     {
         title: 'Ayarlar',
         links: [
-            { label: 'Ayarlar', href: '/user/settings' },
+            { label: 'Ayarlar', href: '/user/settings', icon: null },
         ],
         icon: '⚙️',
     },
     {
         title: 'Profil',
         links: [
-            { label: 'Profil', href: '/user/profile' },
+            { label: 'Profil', href: '/user/profile', icon: null },
         ],
         icon: '👤',
     },
@@ -109,8 +110,8 @@ export default function UserHomePage() {
                             <h2 className="text-xl font-bold mb-2 text-blue-800">{item.title}</h2>
                             <div className="flex flex-wrap gap-2 justify-center">
                                 {item.links.map((link) => (
-                                    <Link key={link.href} href={link.href} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
-                                        {link.label}
+                                    <Link key={link.href} href={link.href} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition flex items-center gap-2">
+                                        {link.icon ? link.icon : link.label}
                                     </Link>
                                 ))}
                             </div>
