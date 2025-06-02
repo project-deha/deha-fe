@@ -6,7 +6,7 @@ interface LocationDto {
     city: string;
 }
 
-interface PredictedEarthquakeDto {
+interface EarthquakeDto {
     id: string;
     magnitude: number;
     depth: number;
@@ -22,21 +22,21 @@ interface Page<T> {
     number: number;
 }
 
-interface PredictedEarthquakeState {
-    earthquakes: PredictedEarthquakeDto[];
+interface EarthquakeState {
+    earthquakes: EarthquakeDto[];
     totalElements: number;
     totalPages: number;
     currentPage: number;
     pageSize: number;
     isLoading: boolean;
     error: string | null;
-    setEarthquakes: (data: Page<PredictedEarthquakeDto>) => void;
+    setEarthquakes: (data: Page<EarthquakeDto>) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     setCurrentPage: (page: number) => void;
 }
 
-export const usePredictedEarthquakeStore = create<PredictedEarthquakeState>((set) => ({
+export const useEarthquakeStore = create<EarthquakeState>((set) => ({
     earthquakes: [],
     totalElements: 0,
     totalPages: 0,

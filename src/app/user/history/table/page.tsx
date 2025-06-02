@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useFilterStore } from '@/store/filterStore';
+import { useEarthquakeStore } from '@/store/earthquakeStore';
+import { earthquakeService } from '@/services/earthquakeService';
 
 interface EarthquakeData {
+    id: string;
     occurrenceDate: string;
     location: {
         city: string;
@@ -16,75 +19,37 @@ interface EarthquakeData {
 
 export default function HistoryTablePage() {
     const { startDate, endDate, city, minMagnitude, maxMagnitude } = useFilterStore();
-    const [data, setData] = useState<EarthquakeData[]>([]);
-    const [filteredData, setFilteredData] = useState<EarthquakeData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const { earthquakes, totalElements, totalPages, currentPage, pageSize, isLoading, error, setEarthquakes, setLoading, setError, setCurrentPage } = useEarthquakeStore();
     const [sortConfig, setSortConfig] = useState<{
         key: keyof EarthquakeData | 'location.city' | 'location.latitude' | 'location.longitude';
         direction: 'asc' | 'desc';
     } | null>(null);
 
-    // Veri yükleme simülasyonu
+    // Fetch data when filters change
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // TODO: API'den veri çekme işlemi burada yapılacak
-                // Şimdilik örnek veri
-                const mockData: EarthquakeData[] = [
-                    {
-                        occurrenceDate: '2024-03-20',
-                        location: {
-                            city: 'Istanbul',
-                            latitude: 41.0082,
-                            longitude: 28.9784
-                        },
-                        depth: 10.5,
-                        magnitude: 5.2
-                    },
-                    // Daha fazla örnek veri eklenebilir
-                ];
-                setData(mockData);
+                const response = await earthquakeService.getFilteredEarthquakes({
+                    startDate,
+                    endDate,
+                    city,
+                    minMagnitude,
+                    maxMagnitude,
+                    page: currentPage, // API expects 0-based index
+                    size: pageSize
+                });
+                setEarthquakes(response);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);
+                setError('Veriler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchData();
-    }, []);
-
-    // Filtreleme
-    useEffect(() => {
-        let filtered = [...data];
-
-        // Tarih filtresi
-        if (startDate) {
-            filtered = filtered.filter(item => item.occurrenceDate >= startDate);
-        }
-        if (endDate) {
-            filtered = filtered.filter(item => item.occurrenceDate <= endDate);
-        }
-
-        // Şehir filtresi
-        if (city) {
-            filtered = filtered.filter(item => item.location.city === city);
-        }
-
-        // Büyüklük filtresi
-        if (minMagnitude > 0) {
-            filtered = filtered.filter(item => item.magnitude >= minMagnitude);
-        }
-        if (maxMagnitude < 10) {
-            filtered = filtered.filter(item => item.magnitude <= maxMagnitude);
-        }
-
-        setFilteredData(filtered);
-        setCurrentPage(1); // Filtreleme yapıldığında ilk sayfaya dön
-    }, [data, startDate, endDate, city, minMagnitude, maxMagnitude]);
+    }, [startDate, endDate, city, minMagnitude, maxMagnitude, currentPage, pageSize]);
 
     // Sıralama
     const requestSort = (key: keyof EarthquakeData | 'location.city' | 'location.latitude' | 'location.longitude') => {
@@ -96,7 +61,7 @@ export default function HistoryTablePage() {
     };
 
     // Sıralama fonksiyonu
-    const sortedData = [...filteredData].sort((a, b) => {
+    const sortedData = [...earthquakes].sort((a, b) => {
         if (!sortConfig) return 0;
 
         const { key, direction } = sortConfig;
@@ -116,14 +81,9 @@ export default function HistoryTablePage() {
         return 0;
     });
 
-    // Sayfalama
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-
     const handlePageChange = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
+        // Convert 1-based UI page number to 0-based API page number
+        setCurrentPage(pageNumber - 1);
     };
 
     return (
@@ -136,12 +96,16 @@ export default function HistoryTablePage() {
 
             {/* Tablo */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                {loading ? (
+                {isLoading ? (
                     <div className="p-8 text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                         <p className="mt-4 text-gray-600">Veriler yükleniyor...</p>
                     </div>
-                ) : filteredData.length === 0 ? (
+                ) : error ? (
+                    <div className="p-8 text-center">
+                        <p className="text-red-600">{error}</p>
+                    </div>
+                ) : earthquakes.length === 0 ? (
                     <div className="p-8 text-center">
                         <p className="text-gray-600">Gösterilecek veri bulunamadı.</p>
                     </div>
@@ -190,8 +154,8 @@ export default function HistoryTablePage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {currentItems.map((item, index) => (
-                                        <tr key={index} className="hover:bg-gray-50">
+                                    {sortedData.map((item) => (
+                                        <tr key={item.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {new Date(item.occurrenceDate).toLocaleDateString('tr-TR')}
                                             </td>
@@ -220,15 +184,15 @@ export default function HistoryTablePage() {
                         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                             <div className="flex-1 flex justify-between sm:hidden">
                                 <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(currentPage)}
+                                    disabled={currentPage === 0}
                                     className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                                 >
                                     Önceki
                                 </button>
                                 <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
+                                    onClick={() => handlePageChange(currentPage + 2)}
+                                    disabled={currentPage === totalPages - 1}
                                     className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                                 >
                                     Sonraki
@@ -237,18 +201,18 @@ export default function HistoryTablePage() {
                             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-sm text-gray-700">
-                                        Toplam <span className="font-medium">{filteredData.length}</span> kayıttan{' '}
-                                        <span className="font-medium">{indexOfFirstItem + 1}</span> -{' '}
+                                        Toplam <span className="font-medium">{totalElements}</span> kayıttan{' '}
+                                        <span className="font-medium">{currentPage * pageSize + 1}</span> -{' '}
                                         <span className="font-medium">
-                                            {Math.min(indexOfLastItem, filteredData.length)}
+                                            {Math.min((currentPage + 1) * pageSize, totalElements)}
                                         </span> arası gösteriliyor
                                     </p>
                                 </div>
                                 <div>
                                     <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                                         <button
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
+                                            onClick={() => handlePageChange(currentPage)}
+                                            disabled={currentPage === 0}
                                             className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                                         >
                                             <span className="sr-only">Önceki</span>
@@ -260,7 +224,7 @@ export default function HistoryTablePage() {
                                             <button
                                                 key={index}
                                                 onClick={() => handlePageChange(index + 1)}
-                                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === index + 1
+                                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === index
                                                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                     }`}
@@ -269,8 +233,8 @@ export default function HistoryTablePage() {
                                             </button>
                                         ))}
                                         <button
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
+                                            onClick={() => handlePageChange(currentPage + 2)}
+                                            disabled={currentPage === totalPages - 1}
                                             className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                                         >
                                             <span className="sr-only">Sonraki</span>

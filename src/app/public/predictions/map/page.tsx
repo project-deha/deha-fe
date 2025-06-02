@@ -31,7 +31,7 @@ export default function MapPage() {
             setLoading(true);
             setError(null);
             try {
-                const response = await axiosInstance.get('/api/v1/predicted-earthquake/most-severe');
+                const response = await axiosInstance.get('/predicted-earthquake/most-severe');
                 setData(response.data);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);

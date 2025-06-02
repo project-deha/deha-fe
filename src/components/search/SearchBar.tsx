@@ -61,11 +61,14 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         });
     }, [startDate, endDate, city, minMagnitude, maxMagnitude]);
 
-    const cities = [
+    let cities = [
         'İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Adana',
         'Gaziantep', 'Konya', 'Mersin', 'Diyarbakır', 'Kayseri',
         'Eskişehir', 'Samsun', 'Denizli', 'Şanlıurfa', 'Malatya'
     ];
+
+    // Convert cities to Turkish uppercase format
+    cities = cities.map(city => city.toLocaleUpperCase('tr-TR'));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -76,9 +79,17 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
     };
 
     const handleApplyFilters = async () => {
-        setFilters(tempFilters);
+        // Ensure city is in correct format before sending to API
+        const filtersToApply = {
+            ...tempFilters,
+            city: tempFilters.city ? tempFilters.city.toLocaleUpperCase('tr-TR') : '',
+            page: 0,
+            size: 10
+        };
+
+        setFilters(filtersToApply);
         if (onFilterChange) {
-            onFilterChange(tempFilters);
+            onFilterChange(filtersToApply);
         }
         setActiveDropdown(null);
 
@@ -86,7 +97,7 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await predictedEarthquakeService.getFilteredEarthquakes(tempFilters);
+                const response = await predictedEarthquakeService.getFilteredEarthquakes(filtersToApply);
                 setEarthquakes(response);
             } catch (error) {
                 setError('Filtreleme sırasında bir hata oluştu');
