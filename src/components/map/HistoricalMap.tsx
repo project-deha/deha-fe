@@ -107,16 +107,16 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                                         default: {
                                             fill: colorScale(cityName),
                                             outline: 'none',
-                                            stroke: selectedCity === cityName ? '#2563eb' : '#fff',
+                                            stroke: selectedCity === cityName ? 'hsla(198, 30.20%, 91.60%, 0.70)' : '#fff',
                                             strokeWidth: selectedCity === cityName ? 2 : 0.5,
                                             cursor: 'pointer',
                                         },
                                         hover: {
-                                            fill: '#2563eb',
+                                            fill: 'hsla(198, 30.20%, 91.60%, 0.70)',
                                             outline: 'none',
                                         },
                                         pressed: {
-                                            fill: '#2563eb',
+                                            fill: 'rgba(128, 128, 128, 0.7)',
                                             outline: 'none',
                                         },
                                     }}

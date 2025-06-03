@@ -36,5 +36,14 @@ export const earthquakeService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    getMostSevereEarthquakes: async () => {
+        try {
+            const response = await axiosInstance.get('/earthquake/most-severe');
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 }; 
