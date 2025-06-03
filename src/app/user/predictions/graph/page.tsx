@@ -55,6 +55,20 @@ interface MonthlyEarthquakeStatsDto {
     count: number;
 }
 
+// Backend'den gelen şehir dağılımı veri formatı
+interface CityDistributionResponse {
+    city: string;
+    count: number;
+    percentage: number;
+}
+
+// Backend'den gelen büyüklük dağılımı veri formatı
+interface MagnitudeDistributionResponse {
+    range: string;
+    count: number;
+    percentage: number;
+}
+
 export default function PredictionsGraphPage() {
     const [data, setData] = useState<PredictionData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -62,7 +76,7 @@ export default function PredictionsGraphPage() {
     const [timeRange, setTimeRange] = useState('12'); // Ay cinsinden
     const [magnitudeData, setMagnitudeData] = useState<MagnitudeDistribution[]>([]);
     const [depthMagnitudeData, setDepthMagnitudeData] = useState<DepthMagnitudeData[]>([]);
-    const [regionData, setRegionData] = useState<RegionDistribution[]>([]);
+    const [cityData, setCityData] = useState<RegionDistribution[]>([]);
 
     // Backend'den aylık deprem istatistiklerini çekme
     const fetchMonthlyEarthquakeStats = async (months: number) => {
@@ -161,22 +175,67 @@ export default function PredictionsGraphPage() {
         return data;
     };
 
-    // Bölge dağılımı verisi üretme
-    const generateRegionDistribution = (months: number) => {
-        const regions = [
-            { name: "Marmara", weight: 0.30 },
-            { name: "Ege", weight: 0.25 },
-            { name: "İç Anadolu", weight: 0.20 },
-            { name: "Doğu Anadolu", weight: 0.15 },
-            { name: "Diğer", weight: 0.10 }
+    // Büyüklük dağılımı verilerini backend'den çekme
+    const fetchMagnitudeDistribution = async () => {
+        try {
+            const response = await axiosInstance.get('/predicted-earthquake/stats/magnitude-distribution');
+            const magnitudeDistribution: MagnitudeDistributionResponse[] = response.data;
+
+            // Backend verisini frontend formatına çevir
+            const formattedMagnitudeData: MagnitudeDistribution[] = magnitudeDistribution.map(magnitude => ({
+                range: magnitude.range,
+                count: magnitude.count,
+                percentage: Number(magnitude.percentage.toFixed(1))
+            }));
+
+            setMagnitudeData(formattedMagnitudeData);
+        } catch (err) {
+            console.error('Büyüklük dağılımı API hatası:', err);
+            // Hata durumunda fallback data kullan
+            const fallbackMagnitudeData = generateMagnitudeDistribution(Number(timeRange));
+            setMagnitudeData(fallbackMagnitudeData);
+        }
+    };
+
+    // Şehir dağılımı verilerini backend'den çekme
+    const fetchCityDistribution = async () => {
+        try {
+            const response = await axiosInstance.get('/predicted-earthquake/stats/city-distribution');
+            const cityDistribution: CityDistributionResponse[] = response.data;
+
+            // Backend verisini frontend formatına çevir
+            const formattedCityData: RegionDistribution[] = cityDistribution.map(city => ({
+                name: city.city,
+                value: city.count,
+                percentage: Number(city.percentage.toFixed(1))
+            }));
+
+            setCityData(formattedCityData);
+        } catch (err) {
+            console.error('Şehir dağılımı API hatası:', err);
+            // Hata durumunda fallback data kullan
+            const fallbackCityData = generateCityDistribution(Number(timeRange));
+            setCityData(fallbackCityData);
+        }
+    };
+
+    // Fallback şehir dağılımı verisi üretme
+    const generateCityDistribution = (months: number) => {
+        const cities = [
+            { name: "İstanbul", weight: 0.25 },
+            { name: "İzmir", weight: 0.20 },
+            { name: "Ankara", weight: 0.15 },
+            { name: "Antalya", weight: 0.12 },
+            { name: "Bursa", weight: 0.10 },
+            { name: "Diğer", weight: 0.18 }
         ];
 
         const totalPredictions = months * 30;
 
-        return regions.map(region => ({
-            name: region.name,
-            value: Math.floor(totalPredictions * region.weight),
-            percentage: Number((region.weight * 100).toFixed(1))
+        return cities.map(city => ({
+            name: city.name,
+            value: Math.floor(totalPredictions * city.weight),
+            percentage: Number((city.weight * 100).toFixed(1))
         }));
     };
 
@@ -185,14 +244,16 @@ export default function PredictionsGraphPage() {
             // Gerçek veri için API çağrısı
             await fetchMonthlyEarthquakeStats(Number(timeRange));
 
-            // Diğer grafikler için henüz simüle edilmiş veri kullan
-            const magnitudeDistData = generateMagnitudeDistribution(Number(timeRange));
-            const depthMagData = generateDepthMagnitudeData(Number(timeRange));
-            const regionDistData = generateRegionDistribution(Number(timeRange));
+            // Şehir dağılımı için gerçek API çağrısı
+            await fetchCityDistribution();
 
-            setMagnitudeData(magnitudeDistData);
+            // Büyüklük dağılımı için gerçek API çağrısı
+            await fetchMagnitudeDistribution();
+
+            // Diğer grafikler için henüz simüle edilmiş veri kullan
+            const depthMagData = generateDepthMagnitudeData(Number(timeRange));
+
             setDepthMagnitudeData(depthMagData);
-            setRegionData(regionDistData);
         };
 
         loadData();
@@ -243,13 +304,13 @@ export default function PredictionsGraphPage() {
 
     const downloadRegionData = () => {
         const csvContent = "data:text/csv;charset=utf-8,"
-            + "Bölge,Tahmini Deprem Sayısı,Yüzde\n"
-            + regionData.map(row => `${row.name},${row.value},${row.percentage}`).join("\n");
+            + "Şehir,Tahmini Deprem Sayısı,Yüzde\n"
+            + cityData.map(row => `${row.name},${row.value},${row.percentage}`).join("\n");
 
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `deprem_tahmin_bolge_dagilimi_${timeRange}ay.csv`);
+        link.setAttribute("download", `deprem_tahmin_sehir_dagilimi_${timeRange}ay.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -507,13 +568,15 @@ export default function PredictionsGraphPage() {
                             </div>
                         </div>
 
-                        {/* Derinlik-Büyüklük İlişkisi Grafiği */}
+
+
+                        {/* Şehir Dağılımı Grafiği */}
                         <div className="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800">Tahmini Derinlik-Büyüklük İlişkisi</h2>
+                                <h2 className="text-xl font-bold text-gray-800">Tahmini Şehir Deprem Dağılımı</h2>
                                 <Button
                                     variant="outline"
-                                    onClick={downloadDepthMagnitudeData}
+                                    onClick={downloadRegionData}
                                     className="flex items-center gap-2"
                                 >
                                     <Download className="h-4 w-4" />
@@ -527,84 +590,9 @@ export default function PredictionsGraphPage() {
                             ) : (
                                 <div className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <ScatterChart
-                                            margin={{ top: 20, right: 30, left: 60, bottom: 60 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
-                                            <XAxis
-                                                type="number"
-                                                dataKey="depth"
-                                                name="Derinlik"
-                                                unit=" km"
-                                                label={{
-                                                    value: 'Tahmini Derinlik (km)',
-                                                    position: 'bottom',
-                                                    offset: 40
-                                                }}
-                                                tick={{ fontSize: 13, fill: '#374151' }}
-                                            />
-                                            <YAxis
-                                                type="number"
-                                                dataKey="magnitude"
-                                                name="Büyüklük"
-                                                label={{
-                                                    value: 'Tahmini Büyüklük (Richter)',
-                                                    angle: -90,
-                                                    position: 'Left',
-                                                    offset: 25
-                                                }}
-                                                tick={{ fontSize: 13, fill: '#374151' }}
-                                            />
-                                            <ZAxis
-                                                type="number"
-                                                dataKey="count"
-                                                range={[50, 400]}
-                                                name="Tahmin Sayısı"
-                                            />
-                                            <Tooltip content={<CustomTooltip />} />
-                                            <Scatter
-                                                name="Tahmini Depremler"
-                                                data={depthMagnitudeData}
-                                                fill="#3b82f6"
-                                                opacity={0.7}
-                                            />
-                                        </ScatterChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
-                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">Tahmin Modeli Hakkında</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Bu scatter plot, gelecek {timeRange} ay için tahmin edilen depremlerin
-                                    derinlik ve büyüklük ilişkisini göstermektedir. Her nokta bir tahmin noktasını
-                                    temsil eder ve noktanın boyutu o bölgedeki tahmin yoğunluğunu gösterir.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Bölgesel Dağılım Grafiği */}
-                        <div className="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800">Tahmini Bölgesel Deprem Dağılımı</h2>
-                                <Button
-                                    variant="outline"
-                                    onClick={downloadRegionData}
-                                    className="flex items-center gap-2"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Veriyi İndir
-                                </Button>
-                            </div>
-                            {loading ? (
-                                <div className="flex justify-center items-center h-[300px]">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                                </div>
-                            ) : (
-                                <div className="h-[300px]">
-                                    <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
-                                                data={regionData}
+                                                data={cityData}
                                                 cx="50%"
                                                 cy="50%"
                                                 labelLine={false}
@@ -637,7 +625,7 @@ export default function PredictionsGraphPage() {
                                                 outerRadius={120}
                                                 dataKey="value"
                                             >
-                                                {regionData.map((entry, index) => (
+                                                {cityData.map((entry, index) => (
                                                     <Cell
                                                         key={`cell-${index}`}
                                                         fill={COLORS[index % COLORS.length]}
@@ -650,10 +638,10 @@ export default function PredictionsGraphPage() {
                                 </div>
                             )}
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">Bölgesel Tahminler Hakkında</h3>
+                                <h3 className="font-semibold mb-2">Şehir Tahminleri Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu pasta grafik, gelecek {timeRange} ay için tahmin edilen depremlerin
-                                    bölgesel dağılımını göstermektedir. Tahminler, bölgelerin sismik aktivite
+                                    Bu pasta grafik, gelecek dönem için tahmin edilen depremlerin
+                                    şehirlere göre dağılımını göstermektedir. Tahminler, şehirlerin sismik aktivite
                                     geçmişi ve fay hatları dikkate alınarak oluşturulmuştur.
                                 </p>
                             </div>
