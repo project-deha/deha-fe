@@ -23,7 +23,7 @@ import {
 } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { Calendar, Download, Filter } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '@/config/axios';
 
 interface PredictionData {
     date: string;
@@ -49,6 +49,12 @@ interface RegionDistribution {
     percentage: number;
 }
 
+interface MonthlyEarthquakeStatsDto {
+    date: string;
+    avgMagnitude: number;
+    count: number;
+}
+
 export default function PredictionsGraphPage() {
     const [data, setData] = useState<PredictionData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,6 +63,49 @@ export default function PredictionsGraphPage() {
     const [magnitudeData, setMagnitudeData] = useState<MagnitudeDistribution[]>([]);
     const [depthMagnitudeData, setDepthMagnitudeData] = useState<DepthMagnitudeData[]>([]);
     const [regionData, setRegionData] = useState<RegionDistribution[]>([]);
+
+    // Backend'den aylık deprem istatistiklerini çekme
+    const fetchMonthlyEarthquakeStats = async (months: number) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Başlangıç tarihi bugün, bitiş tarihi seçilen ay kadar ileri
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + months);
+
+            // LocalDate formatına çevir (YYYY-MM-DD)
+            const startDateStr = startDate.toISOString().split('T')[0];
+            const endDateStr = endDate.toISOString().split('T')[0];
+
+            const response = await axiosInstance.get('/predicted-earthquake/stats/monthly', {
+                params: {
+                    startDate: startDateStr,
+                    endDate: endDateStr
+                }
+            });
+
+            const monthlyStats: MonthlyEarthquakeStatsDto[] = response.data;
+
+            // Backend verisini frontend formatına çevir
+            const formattedData: PredictionData[] = monthlyStats.map(stat => ({
+                date: stat.date.slice(0, 7), // YYYY-MM-DD'den YYYY-MM'e çevir
+                predictedCount: stat.count,
+                avgMagnitude: Number(stat.avgMagnitude.toFixed(1))
+            }));
+
+            setData(formattedData);
+        } catch (err) {
+            console.error('API hatası:', err);
+            setError('Veri yüklenirken bir hata oluştu.');
+            // Hata durumunda fake data kullan
+            const fallbackData = generatePredictionData(months);
+            setData(fallbackData);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Simüle edilmiş tahmin verisi üretimi
     const generatePredictionData = (months: number) => {
@@ -132,19 +181,21 @@ export default function PredictionsGraphPage() {
     };
 
     useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            const predictionData = generatePredictionData(Number(timeRange));
+        const loadData = async () => {
+            // Gerçek veri için API çağrısı
+            await fetchMonthlyEarthquakeStats(Number(timeRange));
+
+            // Diğer grafikler için henüz simüle edilmiş veri kullan
             const magnitudeDistData = generateMagnitudeDistribution(Number(timeRange));
             const depthMagData = generateDepthMagnitudeData(Number(timeRange));
             const regionDistData = generateRegionDistribution(Number(timeRange));
 
-            setData(predictionData);
             setMagnitudeData(magnitudeDistData);
             setDepthMagnitudeData(depthMagData);
             setRegionData(regionDistData);
-            setLoading(false);
-        }, 1000);
+        };
+
+        loadData();
     }, [timeRange]);
 
     // İndirme fonksiyonları
@@ -312,6 +363,19 @@ export default function PredictionsGraphPage() {
                             {loading ? (
                                 <div className="flex justify-center items-center h-[400px]">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : error ? (
+                                <div className="flex flex-col justify-center items-center h-[400px] text-center">
+                                    <div className="text-red-500 mb-2">⚠️</div>
+                                    <p className="text-red-600 font-semibold mb-2">Veri Yükleme Hatası</p>
+                                    <p className="text-gray-600 text-sm mb-4">{error}</p>
+                                    <Button
+                                        onClick={() => fetchMonthlyEarthquakeStats(Number(timeRange))}
+                                        variant="outline"
+                                        className="text-sm"
+                                    >
+                                        Tekrar Dene
+                                    </Button>
                                 </div>
                             ) : (
                                 <div className="h-[400px]">
