@@ -169,7 +169,7 @@ export default function PredictionsMapPage() {
                 <PredictionMap
                     predictionData={mapData}
                     onCitySelect={handleCitySelect}
-                    detailsRoute="/user/predictions/table"
+                    detailsRoute="/public/predictions/table"
                 />
 
                 {/* Eğer hiç marker yoksa bilgi mesajı göster */}
