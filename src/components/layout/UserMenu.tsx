@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
+import axiosInstance from '@/config/axios';
 
 const predictionsSubmenu = [
     { label: 'Harita', href: '/user/predictions/map', icon: <span className="mr-2">🗺️</span> },
@@ -52,10 +53,19 @@ export default function UserMenu() {
         };
     }, [drawerOpen]);
 
-    const handleLogout = () => {
-        useUserStore.getState().clearUser();
-        setDrawerOpen(false);
-        router.push('/public/home');
+    const handleLogout = async () => {
+        try {
+            await axiosInstance.get('auth/logout');
+            useUserStore.getState().clearUser();
+            setDrawerOpen(false);
+            router.push('/public/home');
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Even if the request fails, we'll still clear the local state
+            useUserStore.getState().clearUser();
+            setDrawerOpen(false);
+            router.push('/public/home');
+        }
     };
 
     return (

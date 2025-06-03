@@ -14,9 +14,10 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
-    const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+    const [mode, setMode] = useState<'login' | 'register' | 'forgot-password'>(initialMode);
     const [showVerification, setShowVerification] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState('');
+    const [resetEmailSent, setResetEmailSent] = useState(false);
     const router = useRouter();
 
     const [formData, setFormData] = useState({
@@ -179,7 +180,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                     email: errorMessage
                 }));
             }
-        } else {
+        } else if (mode === 'login') {
             try {
                 const response = await axiosInstance.post('/auth/login', {
                     email: formData.email,
@@ -256,13 +257,46 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
         }));
     };
 
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.email) {
+            setErrors(prev => ({
+                ...prev,
+                email: 'Email adresi gereklidir'
+            }));
+            return;
+        }
+
+        try {
+            await axiosInstance.post('/auth/forgot-my-password', formData.email, {
+                headers: {
+                    'Content-Type': 'text/plain'
+                }
+            });
+            setResetEmailSent(true);
+        } catch (error: any) {
+            console.error('Şifre sıfırlama hatası:', error);
+            let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+
+            if (error.response?.data?.error) {
+                const errorMap = error.response.data.error;
+                errorMessage = Object.values(errorMap)[0] as string;
+            }
+
+            setErrors(prev => ({
+                ...prev,
+                email: errorMessage
+            }));
+        }
+    };
+
     return (
         <>
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            {mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+                        <h2 className="text-2xl font-bold text-gray-900 text-center">
+                            {mode === 'login' ? 'Giriş Yap' : mode === 'register' ? 'Kayıt Ol' : 'Şifremi Unuttum'}
                         </h2>
                         <button
                             onClick={onClose}
@@ -274,154 +308,224 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                         </button>
                     </div>
 
-                    {mode === 'login' && (
-                        <div className="mb-4 p-4 bg-blue-50 rounded-md">
-                            <p className="text-sm text-blue-600">
-                                Test için giriş bilgileri:<br />
-                                Email: test@test.com<br />
-                                Şifre: 123456
-                            </p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {mode === 'register' && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Ad
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className={`w-full px-3 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'
-                                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                    />
-                                    {errors.name && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                                    )}
+                    {mode === 'forgot-password' ? (
+                        resetEmailSent ? (
+                            <div className="text-center py-6">
+                                <div className="mb-4 text-green-600">
+                                    <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
                                 </div>
-                                <div>
-                                    <label htmlFor="surname" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Soyad
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="surname"
-                                        name="surname"
-                                        value={formData.surname}
-                                        onChange={handleChange}
-                                        className={`w-full px-3 py-2 border ${errors.surname ? 'border-red-500' : 'border-gray-300'
-                                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                    />
-                                    {errors.surname && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.surname}</p>
-                                    )}
-                                </div>
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Gönderildi</h3>
+                                <p className="text-gray-600 mb-4">
+                                    Şifreniz {formData.email} adresine gönderildi.
+                                    Lütfen email kutunuzu kontrol edin.
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setMode('login');
+                                        setResetEmailSent(false);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800"
+                                >
+                                    Giriş sayfasına dön
+                                </button>
                             </div>
-                        )}
+                        ) : (
+                            <form onSubmit={handleForgotPassword} className="space-y-4">
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                        E-posta
+                                    </label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'
+                                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                    />
+                                    {errors.email && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                    )}
+                                </div>
 
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                E-posta
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'
-                                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            />
-                            {errors.email && (
-                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                >
+                                    Şifremi Sıfırla
+                                </button>
+
+                                <div className="text-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMode('login')}
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        Giriş sayfasına dön
+                                    </button>
+                                </div>
+                            </form>
+                        )
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {mode === 'register' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Ad
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className={`w-full px-3 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'
+                                                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                        />
+                                        {errors.name && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="surname" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Soyad
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="surname"
+                                            name="surname"
+                                            value={formData.surname}
+                                            onChange={handleChange}
+                                            className={`w-full px-3 py-2 border ${errors.surname ? 'border-red-500' : 'border-gray-300'
+                                                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                        />
+                                        {errors.surname && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.surname}</p>
+                                        )}
+                                    </div>
+                                </div>
                             )}
-                        </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Şifre
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'
-                                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            />
-                            {errors.password && (
-                                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                            )}
-                        </div>
-
-                        {mode === 'register' && (
                             <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Şifre Tekrarı
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                    E-posta
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'
+                                        } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                />
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Şifre
                                 </label>
                                 <input
                                     type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
                                     onChange={handleChange}
-                                    className={`w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                    className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'
                                         } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 />
-                                {errors.confirmPassword && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                                {errors.password && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                                 )}
                             </div>
-                        )}
 
-                        {mode === 'register' && (
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        id="acceptTerms"
-                                        name="acceptTerms"
-                                        type="checkbox"
-                                        checked={formData.acceptTerms}
-                                        onChange={handleChange}
-                                        className={`h-4 w-4 border ${errors.acceptTerms ? 'border-red-500' : 'border-gray-300'
-                                            } rounded focus:ring-blue-500`}
-                                    />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label htmlFor="acceptTerms" className="font-medium text-gray-700">
-                                        Kullanım koşullarını kabul ediyorum
+                            {mode === 'register' && (
+                                <div>
+                                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Şifre Tekrarı
                                     </label>
-                                    {errors.acceptTerms && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.acceptTerms}</p>
+                                    <input
+                                        type="password"
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        className={`w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                    />
+                                    {errors.confirmPassword && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                                     )}
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            {mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
-                        </button>
-                    </form>
+                            {mode === 'register' && (
+                                <div className="flex items-start">
+                                    <div className="flex items-center h-5">
+                                        <input
+                                            id="acceptTerms"
+                                            name="acceptTerms"
+                                            type="checkbox"
+                                            checked={formData.acceptTerms}
+                                            onChange={handleChange}
+                                            className={`h-4 w-4 border ${errors.acceptTerms ? 'border-red-500' : 'border-gray-300'
+                                                } rounded focus:ring-blue-500`}
+                                        />
+                                    </div>
+                                    <div className="ml-3 text-sm">
+                                        <label htmlFor="acceptTerms" className="font-medium text-gray-700">
+                                            Kullanım koşullarını kabul ediyorum
+                                        </label>
+                                        {errors.acceptTerms && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.acceptTerms}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
-                    <div className="mt-4 text-center">
-                        <button
-                            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                            className="text-blue-600 hover:text-blue-800"
-                        >
-                            {mode === 'login'
-                                ? 'Hesabınız yok mu? Kayıt olun'
-                                : 'Zaten hesabınız var mı? Giriş yapın'}
-                        </button>
-                    </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            >
+                                {mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+                            </button>
+                        </form>
+                    )}
+
+                    {mode === 'login' && (
+                        <div className="mt-4 text-center">
+                            <button
+                                onClick={() => setMode('forgot-password')}
+                                className="text-blue-600 text-center hover:text-blue-800 mb-4 block"
+                            >
+                                Şifremi Unuttum
+                            </button>
+                            <button
+                                onClick={() => setMode('register')}
+                                className="text-blue-600 hover:text-blue-800"
+                            >
+                                Hesabınız yok mu? Kayıt olun
+                            </button>
+                        </div>
+                    )}
+
+                    {mode === 'register' && (
+                        <div className="mt-4 text-center">
+                            <button
+                                onClick={() => setMode('login')}
+                                className="text-blue-600 hover:text-blue-800"
+                            >
+                                Zaten hesabınız var mı? Giriş yapın
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
+import axiosInstance from '@/config/axios';
 
 interface UserData {
     firstName: string;
@@ -13,6 +14,7 @@ export default function ProfilePage() {
     const [showModal, setShowModal] = useState(false);
     const [editData, setEditData] = useState<UserData>({ firstName: '', lastName: '', email: '' });
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -42,39 +44,52 @@ export default function ProfilePage() {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (user) {
-            // Zustand store'u güncelle - tüm gerekli alanları koru
-            const updatedUser = {
-                ...user, // Mevcut tüm alanları koru (id, authorities, isVerified vs.)
-                firstName: editData.firstName,
-                lastName: editData.lastName,
-                email: editData.email
-            };
-            setUser(updatedUser);
+            try {
+                const response = await axiosInstance.patch('user/me', {
+                    email: editData.email,
+                    firstName: editData.firstName,
+                    lastName: editData.lastName,
+                    isVerified: user.isVerified
+                });
 
-            // Backward compatibility için localStorage'ı da güncelle
-            if (typeof window !== 'undefined') {
-                const legacyUser = {
-                    name: editData.firstName,
-                    surname: editData.lastName,
+                // Zustand store'u güncelle - tüm gerekli alanları koru
+                const updatedUser = {
+                    ...user, // Mevcut tüm alanları koru (id, authorities, isVerified vs.)
+                    firstName: editData.firstName,
+                    lastName: editData.lastName,
                     email: editData.email
                 };
-                localStorage.setItem('user', JSON.stringify(legacyUser));
+                setUser(updatedUser);
+
+                // Backward compatibility için localStorage'ı da güncelle
+                if (typeof window !== 'undefined') {
+                    const legacyUser = {
+                        name: editData.firstName,
+                        surname: editData.lastName,
+                        email: editData.email
+                    };
+                    localStorage.setItem('user', JSON.stringify(legacyUser));
+                }
+                setShowModal(false);
+            } catch (error) {
+                console.error('Kullanıcı bilgileri güncellenirken hata oluştu:', error);
+                // TODO: Hata mesajını kullanıcıya göster
             }
         }
-        setShowModal(false);
     };
 
     const handleOpenPasswordModal = () => {
         setShowPasswordModal(true);
+        setCurrentPassword('');
         setNewPassword('');
         setRepeatPassword('');
         setPasswordError('');
         setPasswordSuccess('');
     };
 
-    const handlePasswordSave = () => {
+    const handlePasswordSave = async () => {
         if (newPassword.length < 6) {
             setPasswordError('Şifre en az 6 karakter olmalı.');
             setPasswordSuccess('');
@@ -85,14 +100,23 @@ export default function ProfilePage() {
             setPasswordSuccess('');
             return;
         }
-        // Şifre değişikliği için ayrı bir backend çağrısı yapılabilir
-        // Şu an için sadece başarı mesajı göster
-        setPasswordError('');
-        setPasswordSuccess('Şifre başarıyla değiştirildi!');
-        setTimeout(() => {
-            setShowPasswordModal(false);
+
+        try {
+            await axiosInstance.patch(`user/me/password?password=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`);
+
+            setPasswordError('');
+            setPasswordSuccess('Şifre başarıyla değiştirildi!');
+            setTimeout(() => {
+                setShowPasswordModal(false);
+                setPasswordSuccess('');
+                setCurrentPassword('');
+                setNewPassword('');
+                setRepeatPassword('');
+            }, 1200);
+        } catch (error) {
+            setPasswordError('Şifre değiştirme işlemi başarısız oldu. Lütfen mevcut şifrenizi kontrol edin.');
             setPasswordSuccess('');
-        }, 1200);
+        }
     };
 
     return (
@@ -201,6 +225,16 @@ export default function ProfilePage() {
                             ×
                         </button>
                         <h2 className="text-xl font-bold mb-4 text-center">Şifre Değiştir</h2>
+                        <div className="mb-4">
+                            <label className="block font-medium mb-1">Mevcut Şifre</label>
+                            <input
+                                type="password"
+                                value={currentPassword}
+                                onChange={e => setCurrentPassword(e.target.value)}
+                                className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
+                                placeholder="Mevcut şifreniz"
+                            />
+                        </div>
                         <div className="mb-4">
                             <label className="block font-medium mb-1">Yeni Şifre</label>
                             <input
