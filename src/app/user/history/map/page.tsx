@@ -33,11 +33,30 @@ export default function HistoryMapPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // İlk yüklemede most-severe, filtreler değişince filter endpointi
         const fetchData = async () => {
             setLoading(true);
             setError(null);
             try {
-                const responseData = await earthquakeService.getMostSevereEarthquakes();
+                // Eğer filtreler default ise most-severe, değilse filter endpointi
+                const isDefaultFilter = !startDate && !endDate && !city && minMagnitude === 0 && maxMagnitude === 10;
+                let responseData;
+                if (isDefaultFilter) {
+                    responseData = await earthquakeService.getMostSevereEarthquakes();
+                } else {
+                    // Filter endpointi kullan
+                    const response = await earthquakeService.getFilteredEarthquakes({
+                        startDate,
+                        endDate,
+                        city,
+                        minMagnitude,
+                        maxMagnitude,
+                        page: 0,
+                        size: 1000 // Harita için yeterli büyüklükte bir sayı
+                    });
+                    // Filter endpoint returns paginated data
+                    responseData = response.content || response;
+                }
                 setData(responseData);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);
@@ -48,7 +67,7 @@ export default function HistoryMapPage() {
         };
 
         fetchData();
-    }, []);
+    }, [startDate, endDate, city, minMagnitude, maxMagnitude]);
 
     // Filtreleme
     useEffect(() => {
@@ -114,13 +133,15 @@ export default function HistoryMapPage() {
     }));
 
     return (
-        <main className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold mb-4">
                     Deprem Geçmişi Haritası
                 </h1>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-6 min-h-[400px]">
+
+            {/* Harita */}
+            <div className="bg-white rounded-lg shadow-md p-6">
                 {error && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
                         <p className="text-red-600">{error}</p>
@@ -170,6 +191,6 @@ export default function HistoryMapPage() {
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 } 

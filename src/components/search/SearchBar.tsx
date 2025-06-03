@@ -88,8 +88,8 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         }
         setActiveDropdown(null);
 
-        // Eğer harita sayfasındaysak API isteği atma
-        if (pathname === '/user/predictions/map') {
+        // Eğer harita sayfasındaysak API isteği atma (map sayfaları kendi verilerini yönetir)
+        if (pathname === '/user/predictions/map' || pathname === '/user/history/map') {
             return;
         }
 

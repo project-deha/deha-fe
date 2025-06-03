@@ -42,6 +42,8 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
     const [selectedCity, setSelectedCity] = useState<string | null>(null);
     const [showPopup, setShowPopup] = useState(false);
     const [popupPosition, setPopupPosition] = useState<{ x: number, y: number } | null>(null);
+    const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+    const [hoverPopupPosition, setHoverPopupPosition] = useState<{ x: number, y: number } | null>(null);
 
     const colorScale = (cityName: string) => {
         const found = historicalData.find(
@@ -75,6 +77,23 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
         }, 100);
     };
 
+    const handleCityHover = (cityName: string, geo: any, isHovering: boolean) => {
+        if (isHovering) {
+            setHoveredCity(cityName);
+            const centroid = geoCentroid(geo);
+            if (centroid) {
+                const projected = projection(centroid);
+                if (projected) {
+                    const [x, y] = projected;
+                    setHoverPopupPosition({ x, y });
+                }
+            }
+        } else {
+            setHoveredCity(null);
+            setHoverPopupPosition(null);
+        }
+    };
+
     const handleViewDetails = (cityName: string) => {
         router.push(detailsRoute);
     };
@@ -95,7 +114,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                 style={{ width: '100%', height: 'auto', maxWidth: 1000 }}
             >
                 <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
+                    {({ geographies }: any) =>
                         geographies.map((geo: any) => {
                             const cityName = geo.properties.name || geo.properties.NAME_1;
                             return (
@@ -103,6 +122,8 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                                     key={geo.rsmKey}
                                     geography={geo}
                                     onClick={() => handleCityClick(cityName, geo)}
+                                    onMouseEnter={() => handleCityHover(cityName, geo, true)}
+                                    onMouseLeave={() => handleCityHover(cityName, geo, false)}
                                     style={{
                                         default: {
                                             fill: colorScale(cityName),
@@ -127,7 +148,50 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                 </Geographies>
             </ComposableMap>
 
-            {/* Popup */}
+            {/* Hover Popup */}
+            {hoveredCity && hoverPopupPosition && (
+                <div
+                    className="absolute z-40"
+                    style={{
+                        left: hoverPopupPosition.x,
+                        top: hoverPopupPosition.y,
+                        transform: 'translate(-50%, -100%)',
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <div className="bg-white rounded-lg shadow-lg p-4 min-w-[180px] relative">
+                        <h3 className="text-lg font-bold mb-2">{hoveredCity}</h3>
+                        {(() => {
+                            const found = historicalData.find(
+                                (d) => normalize(d.city) === normalize(hoveredCity)
+                            );
+                            if (found) {
+                                return (
+                                    <div className="space-y-1">
+                                        <div>
+                                            <span className="font-semibold">Büyüklük:</span>{' '}
+                                            <span>{found.magnitude?.toFixed(1) ?? '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Derinlik:</span>{' '}
+                                            <span>{found.depth ? `${found.depth.toFixed(1)} km` : '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Tarih:</span>{' '}
+                                            <span>{found.date ? new Date(found.date).toLocaleDateString('tr-TR') : '-'}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <p className="text-gray-600">Bu şehir için henüz deprem verisi bulunmamaktadır.</p>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* Click Popup */}
             {showPopup && selectedCity && popupPosition && (
                 <div
                     className="absolute z-50"
@@ -174,7 +238,17 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                                     </div>
                                 );
                             }
-                            return null;
+                            return (
+                                <div className="space-y-2">
+                                    <p className="text-gray-600">Bu şehir için henüz deprem verisi bulunmamaktadır.</p>
+                                    <button
+                                        onClick={() => handleViewDetails(selectedCity)}
+                                        className="w-full mt-3 bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
+                                    >
+                                        Tüm Geçmiş Verileri Görüntüle
+                                    </button>
+                                </div>
+                            );
                         })()}
                     </div>
                 </div>
