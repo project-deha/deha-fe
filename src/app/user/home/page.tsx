@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Map, Table, LineChart } from 'lucide-react';
+import { useUserStore } from '@/store/userStore';
 
 const menuItems = [
     {
@@ -54,29 +55,33 @@ const menuItems = [
 
 export default function UserHomePage() {
     const [userName, setUserName] = useState('');
+    const [loading, setLoading] = useState(true);
+    const user = useUserStore((state) => state.user);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const user = localStorage.getItem('user');
-            if (user) {
-                try {
-                    const parsed = JSON.parse(user);
-                    setUserName(parsed.name || 'Kullanıcı');
-                } catch {
+        if (user) {
+            // Zustand store'dan kullanıcı adını al
+            const fullName = `${user.firstName} ${user.lastName}`.trim();
+            setUserName(fullName || 'Kullanıcı');
+        } else {
+            // Fallback olarak localStorage'ı kontrol et
+            if (typeof window !== 'undefined') {
+                const localUser = localStorage.getItem('user');
+                if (localUser) {
+                    try {
+                        const parsed = JSON.parse(localUser);
+                        const fullName = `${parsed.name || parsed.firstName || ''} ${parsed.surname || parsed.lastName || ''}`.trim();
+                        setUserName(fullName || 'Kullanıcı');
+                    } catch {
+                        setUserName('Kullanıcı');
+                    }
+                } else {
                     setUserName('Kullanıcı');
                 }
-            } else {
-                setUserName('Kullanıcı');
             }
         }
-    }, []);
-
-    // Dummy stats
-    const stats = [
-        { label: 'Bugünkü Tahmin', value: '12 Deprem', icon: '📈' },
-        { label: 'Son Alarm', value: 'Yok', icon: '🔔' },
-        { label: 'Toplam Alarm', value: '3', icon: '🚨' },
-    ];
+        setLoading(false);
+    }, [user]);
 
     const handleLogout = () => {
         if (typeof window !== 'undefined') {
@@ -88,19 +93,10 @@ export default function UserHomePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col">
             <div className="container mx-auto px-4 py-10 flex-1 flex flex-col">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-blue-800 text-center mb-2 drop-shadow">Hoşgeldin, {userName}!</h1>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-blue-800 text-center mb-2 drop-shadow">
+                    {loading ? 'Hoşgeldin!' : `Hoşgeldin, ${userName}!`}
+                </h1>
                 <p className="text-center text-gray-600 mb-8">DEHA platformuna giriş yaptınız. Deprem tahminleri, geçmiş veriler ve daha fazlası elinizin altında.</p>
-
-                {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center gap-6 mb-10">
-                    {stats.map((stat) => (
-                        <div key={stat.label} className="bg-white rounded-xl shadow p-5 flex flex-col items-center min-w-[140px] border border-blue-100">
-                            <div className="text-3xl mb-2">{stat.icon}</div>
-                            <div className="text-lg font-bold text-blue-700">{stat.value}</div>
-                            <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
-                        </div>
-                    ))}
-                </div>
 
                 {/* Menu Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
@@ -119,12 +115,6 @@ export default function UserHomePage() {
                     ))}
                 </div>
 
-                {/* Logout Button */}
-                <div className="flex justify-center mt-auto">
-                    <button onClick={handleLogout} className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold shadow hover:bg-red-600 transition">
-                        Çıkış Yap
-                    </button>
-                </div>
             </div>
 
         </div>

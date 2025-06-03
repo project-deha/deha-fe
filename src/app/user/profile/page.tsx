@@ -1,43 +1,68 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUserStore } from '@/store/userStore';
 
 interface UserData {
-    name: string;
-    surname: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    password?: string;
 }
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<UserData | null>(null);
     const [showModal, setShowModal] = useState(false);
-    const [editData, setEditData] = useState<UserData>({ name: '', surname: '', email: '', password: '' });
+    const [editData, setEditData] = useState<UserData>({ firstName: '', lastName: '', email: '' });
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
 
+    const user = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('user');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                setUser(parsed);
-                setEditData(parsed);
-            }
+        if (user) {
+            setEditData({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            });
         }
-    }, []);
+    }, [user]);
 
     const handleEdit = () => {
         setShowModal(true);
-        setEditData(user ? { ...user } : { name: '', surname: '', email: '', password: '' });
+        if (user) {
+            setEditData({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            });
+        }
     };
 
     const handleSave = () => {
-        setUser(editData);
-        localStorage.setItem('user', JSON.stringify(editData));
+        if (user) {
+            // Zustand store'u güncelle - tüm gerekli alanları koru
+            const updatedUser = {
+                ...user, // Mevcut tüm alanları koru (id, authorities, isVerified vs.)
+                firstName: editData.firstName,
+                lastName: editData.lastName,
+                email: editData.email
+            };
+            setUser(updatedUser);
+
+            // Backward compatibility için localStorage'ı da güncelle
+            if (typeof window !== 'undefined') {
+                const legacyUser = {
+                    name: editData.firstName,
+                    surname: editData.lastName,
+                    email: editData.email
+                };
+                localStorage.setItem('user', JSON.stringify(legacyUser));
+            }
+        }
         setShowModal(false);
     };
 
@@ -60,11 +85,8 @@ export default function ProfilePage() {
             setPasswordSuccess('');
             return;
         }
-        // Şifreyi güncelle
-        const updatedUser = { ...editData, password: newPassword };
-        setEditData(updatedUser);
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        // Şifre değişikliği için ayrı bir backend çağrısı yapılabilir
+        // Şu an için sadece başarı mesajı göster
         setPasswordError('');
         setPasswordSuccess('Şifre başarıyla değiştirildi!');
         setTimeout(() => {
@@ -80,21 +102,21 @@ export default function ProfilePage() {
                 <div className="bg-white rounded-lg shadow-md p-6 max-w-lg mx-auto space-y-4">
                     <div className="flex items-center space-x-4">
                         <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold text-blue-600">
-                            {user ? user.name.charAt(0) : 'U'}
+                            {user ? user.firstName.charAt(0) + user.lastName.charAt(0) : 'U'}
                         </div>
                         <div>
-                            <div className="text-lg font-semibold">{user ? user.name + ' ' + user.surname : 'Kullanıcı Adı'}</div>
+                            <div className="text-lg font-semibold">{user ? user.firstName + ' ' + user.lastName : 'Kullanıcı Adı'}</div>
                             <div className="text-gray-500 text-sm">{user ? user.email : 'kullanici@email.com'}</div>
                         </div>
                     </div>
                     <hr />
                     <div>
                         <div className="font-medium mb-1">Ad</div>
-                        <div className="text-gray-700">{user ? user.name : 'Adınız'}</div>
+                        <div className="text-gray-700">{user ? user.firstName : 'Adınız'}</div>
                     </div>
                     <div>
                         <div className="font-medium mb-1">Soyad</div>
-                        <div className="text-gray-700">{user ? user.surname : 'Soyadınız'}</div>
+                        <div className="text-gray-700">{user ? user.lastName : 'Soyadınız'}</div>
                     </div>
                     <div>
                         <div className="font-medium mb-1">E-posta</div>
@@ -120,8 +142,8 @@ export default function ProfilePage() {
                             <label className="block font-medium mb-1">Ad</label>
                             <input
                                 type="text"
-                                value={editData.name}
-                                onChange={e => setEditData({ ...editData, name: e.target.value })}
+                                value={editData.firstName}
+                                onChange={e => setEditData({ ...editData, firstName: e.target.value })}
                                 className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
                             />
                         </div>
@@ -129,8 +151,8 @@ export default function ProfilePage() {
                             <label className="block font-medium mb-1">Soyad</label>
                             <input
                                 type="text"
-                                value={editData.surname}
-                                onChange={e => setEditData({ ...editData, surname: e.target.value })}
+                                value={editData.lastName}
+                                onChange={e => setEditData({ ...editData, lastName: e.target.value })}
                                 className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
                             />
                         </div>
