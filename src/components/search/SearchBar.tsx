@@ -199,7 +199,7 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
 
     return (
         <div className="w-full flex justify-center">
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-3xl flex justify-center">
                 <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-0`}>
                     {/* Tarih Filtresi */}
                     <div className="relative flex items-center">
