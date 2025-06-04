@@ -12,7 +12,7 @@ const menuItems = [
             { label: 'Tablo', href: '/user/predictions/table', icon: <Table size={18} /> },
             { label: 'Grafik', href: '/user/predictions/graph', icon: <LineChart size={18} /> },
         ],
-        icon: '🌐',
+        icon: '🔮',
     },
     {
         title: 'Geçmiş Depremler',
@@ -21,7 +21,7 @@ const menuItems = [
             { label: 'Tablo', href: '/user/history/table', icon: <Table size={18} /> },
             { label: 'Grafik', href: '/user/history/graph', icon: <LineChart size={18} /> },
         ],
-        icon: '🕑',
+        icon: '⏳',
     },
     {
         title: 'Alarmlar',
@@ -101,12 +101,12 @@ export default function UserHomePage() {
                 {/* Menu Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
                     {menuItems.map((item) => (
-                        <div key={item.title} className="bg-white rounded-2xl shadow-xl p-7 flex flex-col items-center hover:-translate-y-1 hover:shadow-2xl transition border border-blue-100 group">
-                            <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">{item.icon}</div>
-                            <h2 className="text-xl font-bold mb-2 text-blue-800">{item.title}</h2>
-                            <div className="flex flex-wrap gap-2 justify-center">
+                        <div key={item.title} className="bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center hover:-translate-y-1 hover:shadow-2xl transition border border-blue-100 group">
+                            <div className="text-6xl mb-6 group-hover:scale-110 transition-transform">{item.icon}</div>
+                            <h2 className="text-2xl font-bold mb-4 text-blue-800">{item.title}</h2>
+                            <div className="flex flex-wrap gap-3 justify-center">
                                 {item.links.map((link) => (
-                                    <Link key={link.href} href={link.href} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition flex items-center gap-2">
+                                    <Link key={link.href} href={link.href} className="px-5 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition flex items-center gap-2">
                                         {link.icon ? link.icon : link.label}
                                     </Link>
                                 ))}

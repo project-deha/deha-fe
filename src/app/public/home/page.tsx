@@ -16,8 +16,8 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
                     {/* Harita Kartı */}
                     <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center transition-transform hover:-translate-y-2 hover:shadow-2xl group border border-blue-100">
-                        <div className="bg-blue-100 rounded-full p-4 mb-4">
-                            <Map className="w-10 h-10 text-blue-600 group-hover:text-blue-800 transition-colors" />
+                        <div className="bg-blue-100 rounded-full p-4 mb-4 flex items-center justify-center">
+                            <span className="text-4xl group-hover:scale-110 transition-transform">🗺️</span>
                         </div>
                         <h2 className="text-2xl font-bold mb-2 text-blue-800">Deprem Tahmini Haritası</h2>
                         <p className="text-gray-600 mb-6 text-center">
@@ -30,8 +30,8 @@ export default function HomePage() {
 
                     {/* Tablo Kartı */}
                     <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center transition-transform hover:-translate-y-2 hover:shadow-2xl group border border-blue-100">
-                        <div className="bg-blue-100 rounded-full p-4 mb-4">
-                            <Table className="w-10 h-10 text-blue-600 group-hover:text-blue-800 transition-colors" />
+                        <div className="bg-blue-100 rounded-full p-4 mb-4 flex items-center justify-center">
+                            <span className="text-4xl group-hover:scale-110 transition-transform">📋</span>
                         </div>
                         <h2 className="text-2xl font-bold mb-2 text-blue-800">Deprem Tahmini Tablosu</h2>
                         <p className="text-gray-600 mb-6 text-center">

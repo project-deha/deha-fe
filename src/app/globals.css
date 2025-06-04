@@ -105,3 +105,20 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom animations */
+@keyframes subtle-forward {
+
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-subtle-forward {
+  animation: subtle-forward 2s ease-in-out infinite;
+}

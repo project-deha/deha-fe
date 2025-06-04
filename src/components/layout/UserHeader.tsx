@@ -16,16 +16,19 @@ export default function UserHeader() {
 
     return (
         <header className="w-full bg-white shadow-sm sticky top-0 z-40">
-            <div className="container mx-auto flex items-center justify-between py-4 px-4 gap-4">
-                <Link href="/user/home" className="text-4xl font-bold mb-0">
-                    DEHA
-                </Link>
+            <div className="container mx-auto grid grid-cols-3 items-center py-4 px-4 gap-4">
+                <div className="flex justify-start">
+                    <Link href="/user/home" className="text-4xl font-bold mb-0">
+                        DEHA
+                    </Link>
+                </div>
                 {showSearchBar && (
-                    <div className="flex-1 mx-8">
+                    <div className="flex justify-center">
                         <SearchBar mode={isPredictionPage ? 'prediction' : 'history'} />
                     </div>
                 )}
-                <div className="ml-4">
+                {!showSearchBar && <div></div>}
+                <div className="flex justify-end">
                     <UserMenu />
                 </div>
             </div>
