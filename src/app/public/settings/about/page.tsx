@@ -9,7 +9,7 @@ export default function AboutPage() {
                     <section>
                         <h2 className="text-xl font-semibold mb-4">DEHA Deprem Tahmin Sistemi</h2>
                         <p className="text-gray-600 mb-4">
-                            DEHA, Türkiye'deki deprem riskini analiz eden ve tahminlerde bulunan
+                            DEHA, Türkiye&apos;deki deprem riskini analiz eden ve tahminlerde bulunan
                             yenilikçi bir yapay zeka sistemidir. Amacımız, deprem riskini minimize
                             etmek ve toplumu bilgilendirmektir.
                         </p>

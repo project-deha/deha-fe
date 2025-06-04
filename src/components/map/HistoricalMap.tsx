@@ -56,6 +56,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
         return `rgb(${red},${green},0)`;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCityClick = (cityName: string, geo: any) => {
         // Sadece veri olan şehirlerde popup aç
         const found = historicalData.find(
@@ -77,6 +78,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
         }, 100);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCityHover = (cityName: string, geo: any, isHovering: boolean) => {
         if (isHovering) {
             setHoveredCity(cityName);
@@ -94,7 +96,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
         }
     };
 
-    const handleViewDetails = (cityName: string) => {
+    const handleViewDetails = () => {
         router.push(detailsRoute);
     };
 
@@ -114,9 +116,12 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                 style={{ width: '100%', height: 'auto', maxWidth: 1000 }}
             >
                 <Geographies geography={geoUrl}>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {({ geographies }: any) =>
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         geographies.map((geo: any) => {
-                            const cityName = geo.properties.name || geo.properties.NAME_1;
+                            const cityName = geo.properties.name || geo.properties.NAME_1 || '';
+                            if (!cityName) return null;
                             return (
                                 <Geography
                                     key={geo.rsmKey}
@@ -230,7 +235,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                                             <span>{found.depth ? `${found.depth.toFixed(1)} km` : '-'}</span>
                                         </div>
                                         <button
-                                            onClick={() => handleViewDetails(selectedCity)}
+                                            onClick={() => handleViewDetails()}
                                             className="w-full mt-3 bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
                                         >
                                             Detayları Görüntüle
@@ -242,7 +247,7 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
                                 <div className="space-y-2">
                                     <p className="text-gray-600">Bu şehir için henüz deprem verisi bulunmamaktadır.</p>
                                     <button
-                                        onClick={() => handleViewDetails(selectedCity)}
+                                        onClick={() => handleViewDetails()}
                                         className="w-full mt-3 bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
                                     >
                                         Tüm Geçmiş Verileri Görüntüle

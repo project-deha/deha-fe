@@ -63,14 +63,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
         return '#90EE90'; // Açık Yeşil
     };
 
-    const getHoverColor = (baseColor: string) => {
-        // Convert hex to rgba with 0.7 opacity
-        const r = parseInt(baseColor.slice(1, 3), 16);
-        const g = parseInt(baseColor.slice(3, 5), 16);
-        const b = parseInt(baseColor.slice(5, 7), 16);
-        return `rgba(${r}, ${g}, ${b}, 0.7)`;
-    };
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCityClick = (cityName: string, geo: any) => {
         setSelectedCity(cityName);
         setShowPopup(true);
@@ -88,6 +81,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
         }, 100);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCityHover = (cityName: string, geo: any, isHovering: boolean) => {
         if (isHovering) {
             setHoveredCity(cityName);
@@ -105,7 +99,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
         }
     };
 
-    const handleViewDetails = (cityName: string) => {
+    const handleViewDetails = () => {
         router.push(detailsRoute);
     };
 
@@ -125,9 +119,12 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                 style={{ width: '100%', height: 'auto', maxWidth: 1000 }}
             >
                 <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
-                        geographies.map((geo) => {
-                            const cityName = geo.properties.name || geo.properties.NAME_1;
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {({ geographies }: any) =>
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        geographies.map((geo: any) => {
+                            const cityName = geo.properties.name || geo.properties.NAME_1 || '';
+                            if (!cityName) return null;
                             return (
                                 <Geography
                                     key={geo.rsmKey}
@@ -241,7 +238,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                             <span>{new Date(found.occurrenceDate).toLocaleDateString('tr-TR')}</span>
                                         </div>
                                         <button
-                                            onClick={() => handleViewDetails(selectedCity)}
+                                            onClick={handleViewDetails}
                                             className="w-full mt-3 bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
                                         >
                                             Detayları Görüntüle
@@ -253,7 +250,7 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
                                 <div className="space-y-2">
                                     <p className="text-gray-600">Bu şehir için henüz tahmin verisi bulunmamaktadır.</p>
                                     <button
-                                        onClick={() => handleViewDetails(selectedCity)}
+                                        onClick={handleViewDetails}
                                         className="w-full mt-3 bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors"
                                     >
                                         Tüm Tahminleri Görüntüle

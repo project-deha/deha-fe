@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import EmailVerificationModal from './EmailVerificationModal';
 import { useRouter } from 'next/navigation';
-import { API_BASE_URL } from '@/config/api';
 import axiosInstance from '@/config/axios';
 import { useUserStore } from '@/store/userStore';
 
@@ -11,6 +10,18 @@ interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialMode?: 'login' | 'register';
+}
+
+interface ApiErrorResponse {
+    response?: {
+        status?: number;
+        data?: {
+            error?: Record<string, unknown>;
+            message?: string;
+        };
+    };
+    request?: unknown;
+    message: string;
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
@@ -119,7 +130,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
 
         if (mode === 'register') {
             try {
-                const registerResponse = await axiosInstance.post('/auth/register', {
+                await axiosInstance.post('/auth/register', {
                     email: formData.email,
                     firstName: formData.name,
                     lastName: formData.surname,
@@ -140,23 +151,24 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                     // Doğrulama modalını göster
                     setRegisteredEmail(formData.email);
                     setShowVerification(true);
-                } catch (loginError: any) {
+                } catch (loginError: unknown) {
                     console.error('Otomatik giriş hatası:', loginError);
                     // Kayıt başarılı ama giriş başarısız olsa bile doğrulama modalını göster
                     setRegisteredEmail(formData.email);
                     setShowVerification(true);
                 }
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Kayıt hatası:', error);
                 let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
 
-                if (error.response) {
+                if (error && typeof error === 'object' && 'response' in error) {
+                    const apiError = error as ApiErrorResponse;
                     // Backend'den gelen hata mesajını kullan
-                    if (error.response.data?.error) {
-                        const errorMap = error.response.data.error;
+                    if (apiError.response?.data?.error) {
+                        const errorMap = apiError.response.data.error;
                         errorMessage = Object.values(errorMap)[0] as string;
                     } else {
-                        switch (error.response.status) {
+                        switch (apiError.response?.status) {
                             case 400:
                                 errorMessage = 'Geçersiz kayıt bilgileri.';
                                 break;
@@ -171,7 +183,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                                 break;
                         }
                     }
-                } else if (error.request) {
+                } else if (error && typeof error === 'object' && 'request' in error) {
                     errorMessage = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
                 }
 
@@ -194,17 +206,18 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                 // Yönlendirme öncesi kısa bir gecikme ekle
                 await new Promise(resolve => setTimeout(resolve, 100));
                 router.push('/user/home');
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Giriş hatası:', error);
                 let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
 
-                if (error.response) {
+                if (error && typeof error === 'object' && 'response' in error) {
+                    const apiError = error as ApiErrorResponse;
                     // Backend'den gelen hata mesajını kullan
-                    if (error.response.data?.error) {
-                        const errorMap = error.response.data.error;
+                    if (apiError.response?.data?.error) {
+                        const errorMap = apiError.response.data.error;
                         errorMessage = Object.values(errorMap)[0] as string;
                     } else {
-                        switch (error.response.status) {
+                        switch (apiError.response?.status) {
                             case 401:
                                 errorMessage = 'Geçersiz email veya şifre.';
                                 break;
@@ -222,7 +235,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                                 break;
                         }
                     }
-                } else if (error.request) {
+                } else if (error && typeof error === 'object' && 'request' in error) {
                     errorMessage = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
                 }
 
@@ -274,13 +287,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                 }
             });
             setResetEmailSent(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Şifre sıfırlama hatası:', error);
             let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
 
-            if (error.response?.data?.error) {
-                const errorMap = error.response.data.error;
-                errorMessage = Object.values(errorMap)[0] as string;
+            if (error && typeof error === 'object' && 'response' in error) {
+                const apiError = error as ApiErrorResponse;
+                if (apiError.response?.data?.error) {
+                    const errorMap = apiError.response.data.error;
+                    errorMessage = Object.values(errorMap)[0] as string;
+                }
             }
 
             setErrors(prev => ({

@@ -1,5 +1,3 @@
-import { Map, Table } from 'lucide-react';
-
 export default function HomePage() {
     return (
         <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col py-16">
@@ -7,7 +5,7 @@ export default function HomePage() {
             <section className="text-center px-4 flex flex-col gap-8 w-1/2 mx-auto text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4 drop-shadow-lg">DEHA: Dinamik Deprem Felaketi Analizi</h1>
                 <p className="text-lg md:text-xl text-gray-700 mb-8 ">
-                    Türkiye'nin 81 ili için gelecek bir yıllık deprem tahminlerini keşfedin. Bilimsel tahminler, güncel analizler ve modern arayüz ile güvenliğiniz için buradayız.
+                    Türkiye&apos;nin 81 ili için gelecek bir yıllık deprem tahminlerini keşfedin. Bilimsel tahminler, güncel analizler ve modern arayüz ile güvenliğiniz için buradayız.
                 </p>
             </section>
 

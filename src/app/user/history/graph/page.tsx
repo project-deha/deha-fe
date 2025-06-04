@@ -2,27 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
     ResponsiveContainer,
-    Brush,
     BarChart,
     Bar,
-    ScatterChart,
-    Scatter,
-    ZAxis,
     PieChart,
     Pie,
     Cell,
-    LabelList,
+    LineChart,
+    Line,
 } from 'recharts';
 import { Button } from "@/components/ui/button";
-import { Calendar, Download, Filter } from 'lucide-react';
+import { Download } from 'lucide-react';
 import axiosInstance from '@/config/axios';
 
 interface HistoricalData {
@@ -35,12 +29,6 @@ interface MagnitudeDistribution {
     range: string;
     count: number;
     percentage: number;
-}
-
-interface DepthMagnitudeData {
-    depth: number;
-    magnitude: number;
-    count: number;
 }
 
 interface CityDistribution {
@@ -61,7 +49,6 @@ export default function HistoryGraphPage() {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState('10'); // Yıl cinsinden
     const [magnitudeData, setMagnitudeData] = useState<MagnitudeDistribution[]>([]);
-    const [depthMagnitudeData, setDepthMagnitudeData] = useState<DepthMagnitudeData[]>([]);
     const [cityData, setCityData] = useState<CityDistribution[]>([]);
 
     // API'den aylık deprem istatistiklerini çek
@@ -127,7 +114,7 @@ export default function HistoryGraphPage() {
         try {
             const response = await axiosInstance.get('/earthquake/stats/city-distribution');
             // Backend'den gelen veriyi CityDistribution formatına dönüştür
-            const cityStats = response.data.map((item: any) => ({
+            const cityStats = response.data.map((item: { city: string; count: number; percentage: number }) => ({
                 name: item.city,
                 value: item.count,
                 percentage: item.percentage
@@ -139,67 +126,6 @@ export default function HistoryGraphPage() {
         }
     };
 
-    // Büyüklük dağılımı verisi üretme
-    const generateMagnitudeDistribution = (years: number) => {
-        const ranges = [
-            '2.0-2.9', '3.0-3.9', '4.0-4.9',
-            '5.0-5.9', '6.0-6.9', '7.0+'
-        ];
-
-        // Gerçekçi dağılım için ağırlıklar (küçük depremler daha sık)
-        const weights = [0.45, 0.30, 0.15, 0.07, 0.02, 0.01];
-        const totalEarthquakes = years * 1000; // Yıl başına ortalama deprem
-
-        return ranges.map((range, index) => ({
-            range,
-            count: Math.floor(totalEarthquakes * weights[index]),
-            percentage: Number((weights[index] * 100).toFixed(1))
-        }));
-    };
-
-    // Derinlik ve büyüklük verisi üretme
-    const generateDepthMagnitudeData = (years: number) => {
-        const data: DepthMagnitudeData[] = [];
-        const totalPoints = years * 100; // Her yıl için ortalama 100 veri noktası
-
-        for (let i = 0; i < totalPoints; i++) {
-            // Gerçekçi derinlik dağılımı (0-700 km)
-            const depth = Math.floor(Math.random() * 700);
-
-            // Derinliğe bağlı büyüklük dağılımı
-            const baseMagnitude = 2 + Math.random() * 6;
-            const depthFactor = 1 - (depth / 1000);
-            const magnitude = Number((baseMagnitude * (0.7 + depthFactor * 0.3)).toFixed(1));
-
-            // Benzer noktalarda yoğunluğu hesapla
-            const count = Math.floor(Math.random() * 50) + 1;
-
-            data.push({ depth, magnitude, count });
-        }
-
-        return data;
-    };
-
-    // Şehir dağılımı verisi üretme
-    const generateCityDistribution = (years: number) => {
-        const cities = [
-            { name: "İzmir", weight: 0.25 },
-            { name: "Van", weight: 0.20 },
-            { name: "Muğla", weight: 0.15 },
-            { name: "Manisa", weight: 0.12 },
-            { name: "Denizli", weight: 0.10 },
-            { name: "Diğer", weight: 0.18 }
-        ];
-
-        const totalEarthquakes = years * 1000; // Yıl başına ortalama deprem
-
-        return cities.map(city => ({
-            name: city.name,
-            value: Math.floor(totalEarthquakes * city.weight),
-            percentage: Number((city.weight * 100).toFixed(1))
-        }));
-    };
-
     useEffect(() => {
         setLoading(true);
         setError(null);
@@ -209,12 +135,10 @@ export default function HistoryGraphPage() {
             try {
                 const historicalData = await fetchMonthlyEarthquakeStats(Number(timeRange));
                 const magnitudeDistData = await fetchMagnitudeDistribution();
-                const depthMagData = generateDepthMagnitudeData(Number(timeRange));
                 const cityDistData = await fetchCityDistribution();
 
                 setData(historicalData);
                 setMagnitudeData(magnitudeDistData);
-                setDepthMagnitudeData(depthMagData);
                 setCityData(cityDistData);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Veriler yüklenirken bir hata oluştu.');
@@ -258,20 +182,6 @@ export default function HistoryGraphPage() {
         document.body.removeChild(link);
     };
 
-    const downloadDepthMagnitudeData = () => {
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + "Derinlik (km),Büyüklük,Deprem Sayısı\n"
-            + depthMagnitudeData.map(row => `${row.depth},${row.magnitude},${row.count}`).join("\n");
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `gecmis_deprem_derinlik_buyukluk_${timeRange}yil.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
     const downloadCityData = () => {
         const csvContent = "data:text/csv;charset=utf-8,"
             + "Şehir,Deprem Sayısı,Yüzde\n"
@@ -292,12 +202,20 @@ export default function HistoryGraphPage() {
     const LINE_GRADIENT_ID = 'lineGradient';
 
     // Modern Tooltip
-    const CustomTooltip = ({ active, payload, label }: any) => {
+    const CustomTooltip = ({ active, payload, label }: {
+        active?: boolean;
+        payload?: Array<{
+            color: string;
+            name: string;
+            value: number;
+        }>;
+        label?: string;
+    }) => {
         if (active && payload && payload.length) {
             return (
                 <div className="bg-white p-4 border rounded-lg shadow-lg min-w-[180px]">
                     <p className="font-semibold text-blue-700 mb-1">{label}</p>
-                    {payload.map((item: any, idx: number) => (
+                    {payload.map((item, idx: number) => (
                         <div key={idx} className="flex justify-between text-sm mb-1">
                             <span className="font-medium" style={{ color: item.color }}>{item.name}:</span>
                             <span className="ml-2">{item.value}</span>
@@ -310,7 +228,16 @@ export default function HistoryGraphPage() {
     };
 
     // Modern Pie Tooltip
-    const PieTooltip = ({ active, payload }: any) => {
+    const PieTooltip = ({ active, payload }: {
+        active?: boolean;
+        payload?: Array<{
+            payload: {
+                name: string;
+                value: number;
+                percentage: number;
+            };
+        }>;
+    }) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
@@ -443,7 +370,7 @@ export default function HistoryGraphPage() {
                             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold mb-2">Analiz Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu grafik, Türkiye'deki son {timeRange} yıl içindeki deprem aktivitesinin yıllık
+                                    Bu grafik, Türkiye&apos;deki son {timeRange} yıl içindeki deprem aktivitesinin yıllık
                                     değişimini göstermektedir. Mavi çizgi yıllık deprem sayısını, kırmızı çizgi ise
                                     o yıl içindeki ortalama deprem büyüklüğünü temsil eder.
                                 </p>
@@ -519,7 +446,7 @@ export default function HistoryGraphPage() {
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold mb-2">Büyüklük Dağılımı Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu histogram, son {timeRange} yıl içinde Türkiye'de meydana gelen depremlerin
+                                    Bu histogram, son {timeRange} yıl içinde Türkiye&apos;de meydana gelen depremlerin
                                     büyüklük aralıklarına göre dağılımını göstermektedir. Küçük büyüklükteki depremlerin
                                     çok daha sık olduğu, büyük depremlerin ise nadir olduğu açıkça görülmektedir.
                                 </p>
@@ -625,9 +552,9 @@ export default function HistoryGraphPage() {
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold mb-2">Bölgesel Dağılım Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu pasta grafik, son {timeRange} yıl içinde Türkiye'de kaydedilen depremlerin
+                                    Bu pasta grafik, son {timeRange} yıl içinde Türkiye&apos;de kaydedilen depremlerin
                                     şehirlere göre dağılımını göstermektedir. En çok deprem aktivitesi gösteren şehirler
-                                    ayrı ayrı gösterilirken, diğer şehirler "Diğer" kategorisi altında toplanmıştır.
+                                    ayrı ayrı gösterilirken, diğer şehirler &quot;Diğer&quot; kategorisi altında toplanmıştır.
                                 </p>
                             </div>
                         </div>

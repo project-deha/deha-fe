@@ -28,57 +28,23 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onVerif
             });
 
             onVerificationSuccess();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Doğrulama hatası:', error);
-            let errorMessage = 'Doğrulama kodu hatalı. Lütfen tekrar deneyin.';
-
-            if (error.response) {
-                if (error.response.data?.error) {
-                    const errorMap = error.response.data.error;
-                    errorMessage = Object.values(errorMap)[0] as string;
-                } else {
-                    switch (error.response.status) {
-                        case 400:
-                            errorMessage = 'Geçersiz doğrulama kodu.';
-                            break;
-                        case 404:
-                            errorMessage = 'Doğrulama kodu bulunamadı.';
-                            break;
-                        case 429:
-                            errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
-                            break;
-                        case 500:
-                            errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
-                            break;
-                    }
-                }
-            }
-            setError(errorMessage);
+            setError('Doğrulama sırasında bir hata oluştu. Lütfen tekrar deneyin.');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleResendCode = async () => {
-        setError('');
-        setVerificationCode('');
         setIsLoading(true);
-
+        setError('');
         try {
-            await axiosInstance.post('/auth/resend-verification', {
-                email: email
-            });
-            alert('Yeni doğrulama kodu gönderildi!');
-        } catch (error: any) {
-            console.error('Kod gönderme hatası:', error);
-            let errorMessage = 'Kod gönderilemedi. Lütfen daha sonra tekrar deneyin.';
-
-            if (error.response?.data?.error) {
-                const errorMap = error.response.data.error;
-                errorMessage = Object.values(errorMap)[0] as string;
-            }
-
-            alert(errorMessage);
+            await axiosInstance.post('/auth/verify-email/resend', { email });
+            // Could show success message here if needed
+        } catch (error: unknown) {
+            console.error('Kod tekrar gönderme hatası:', error);
+            setError('Kod tekrar gönderilirken bir hata oluştu.');
         } finally {
             setIsLoading(false);
         }

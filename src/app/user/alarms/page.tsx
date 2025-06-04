@@ -2,17 +2,28 @@
 
 import { turkishCities } from '@/constants/TurkishCities';
 import { useEffect, useState } from 'react';
-import Select from 'react-select';
+import Select, { MultiValue } from 'react-select';
 import axiosInstance from '@/config/axios';
 
 const cityOptions = turkishCities.map(city => ({ value: city, label: city }));
 
+interface UserDto {
+    id: string;
+    email: string;
+    username: string;
+}
+
 interface Alarm {
     id: string;
-    owner: any; // UserDto type can be added if needed
+    owner: UserDto;
     minimumMagnitude: number;
     maximumMagnitude: number;
     city: string;
+}
+
+interface CityOption {
+    value: string;
+    label: string;
 }
 
 export default function AlarmsPage() {
@@ -124,7 +135,7 @@ export default function AlarmsPage() {
                                 isMulti
                                 options={cityOptions}
                                 value={cityOptions.filter(opt => selectedCities.includes(opt.value))}
-                                onChange={(opts: any) => setSelectedCities(Array.isArray(opts) ? opts.map((opt: any) => opt.value) : [])}
+                                onChange={(opts: MultiValue<CityOption>) => setSelectedCities(Array.isArray(opts) ? opts.map((opt: CityOption) => opt.value) : [])}
                                 className="mb-2"
                                 placeholder="Şehir seçiniz..."
                                 isDisabled={isLoading}

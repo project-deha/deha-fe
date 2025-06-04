@@ -47,7 +47,7 @@ export default function ProfilePage() {
     const handleSave = async () => {
         if (user) {
             try {
-                const response = await axiosInstance.patch('user/me', {
+                await axiosInstance.patch('user/me', {
                     email: editData.email,
                     firstName: editData.firstName,
                     lastName: editData.lastName,
@@ -73,8 +73,8 @@ export default function ProfilePage() {
                     localStorage.setItem('user', JSON.stringify(legacyUser));
                 }
                 setShowModal(false);
-            } catch (error) {
-                console.error('Kullanıcı bilgileri güncellenirken hata oluştu:', error);
+            } catch {
+                console.error('Kullanıcı bilgileri güncellenirken hata oluştu:');
                 // TODO: Hata mesajını kullanıcıya göster
             }
         }
@@ -113,7 +113,7 @@ export default function ProfilePage() {
                 setNewPassword('');
                 setRepeatPassword('');
             }, 1200);
-        } catch (error) {
+        } catch {
             setPasswordError('Şifre değiştirme işlemi başarısız oldu. Lütfen mevcut şifrenizi kontrol edin.');
             setPasswordSuccess('');
         }

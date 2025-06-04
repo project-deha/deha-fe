@@ -83,13 +83,6 @@ export default function UserHomePage() {
         setLoading(false);
     }, [user]);
 
-    const handleLogout = () => {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col">
             <div className="container mx-auto px-4 py-10 flex-1 flex flex-col">

@@ -49,7 +49,7 @@ export default function PredictionsTablePage() {
         };
 
         fetchData();
-    }, [startDate, endDate, city, minMagnitude, maxMagnitude, currentPage, pageSize]);
+    }, [startDate, endDate, city, minMagnitude, maxMagnitude, currentPage, pageSize, setEarthquakes, setLoading, setError]);
 
     // Sıralama
     const requestSort = (key: keyof EarthquakeData | 'location.city' | 'location.latitude' | 'location.longitude') => {

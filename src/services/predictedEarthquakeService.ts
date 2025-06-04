@@ -1,5 +1,4 @@
 import axiosInstance from '@/config/axios';
-import axios from 'axios';
 
 interface FilterParams {
     startDate: string;

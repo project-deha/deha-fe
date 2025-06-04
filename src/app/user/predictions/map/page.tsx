@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useFilterStore } from '@/store/filterStore';
-import PredictionMap from '@/components/map/PredictionMap';
-import { useRouter } from 'next/navigation';
 import axiosInstance from '@/config/axios';
 import { predictedEarthquakeService } from '@/services/predictedEarthquakeService';
+import PredictionMap from '@/components/map/PredictionMap';
 
 interface PredictionData {
     id: string;
@@ -20,7 +19,6 @@ interface PredictionData {
 }
 
 export default function PredictionsMapPage() {
-    const router = useRouter();
     const { startDate, endDate, city, minMagnitude, maxMagnitude, setFilters } = useFilterStore();
     const [data, setData] = useState<PredictionData[]>([]);
     const [filteredData, setFilteredData] = useState<PredictionData[]>([]);
@@ -109,15 +107,6 @@ export default function PredictionsMapPage() {
         return Array.from(cityMap.values());
     };
 
-    // Büyüklüğe göre renk belirleme
-    const getColorByMagnitude = (magnitude: number) => {
-        if (magnitude >= 7.0) return '#FF0000'; // Kırmızı
-        if (magnitude >= 6.0) return '#FF4500'; // Turuncu-Kırmızı
-        if (magnitude >= 5.0) return '#FFA500'; // Turuncu
-        if (magnitude >= 4.0) return '#FFD700'; // Altın Sarısı
-        return '#90EE90'; // Açık Yeşil
-    };
-
     const handleCitySelect = (selectedCity: string) => {
         // Seçilen şehir için filtreleri güncelle
         setFilters({
@@ -127,17 +116,6 @@ export default function PredictionsMapPage() {
             minMagnitude: minMagnitude,
             maxMagnitude: maxMagnitude
         });
-    };
-
-    const handleViewDetails = (selectedCity: string) => {
-        setFilters({
-            startDate: startDate,
-            endDate: endDate,
-            city: selectedCity,
-            minMagnitude: minMagnitude,
-            maxMagnitude: maxMagnitude
-        });
-        router.push('/user/predictions/table');
     };
 
     // Harita için veri hazırlama

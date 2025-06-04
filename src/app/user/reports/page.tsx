@@ -27,7 +27,8 @@ export default function ReportsPage() {
                 const response = await axiosInstance.get('/report');
                 setReports(response.data);
                 setLoading(false);
-            } catch (err) {
+            } catch {
+                console.error('Raporlar yüklenirken hata oluştu:');
                 setError('Raporlar yüklenirken bir hata oluştu.');
                 setLoading(false);
             }
