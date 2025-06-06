@@ -31,26 +31,13 @@ export default function PredictionsMapPage() {
             setLoading(true);
             setError(null);
             try {
-                // Eğer filtreler default ise most-severe, değilse filter endpointi
-                const isDefaultFilter = !startDate && !endDate && !city && minMagnitude === 0 && maxMagnitude === 10;
-                let responseData;
-                if (isDefaultFilter) {
-                    const response = await axiosInstance.get('/predicted-earthquake/most-severe');
-                    responseData = response.data;
-                } else {
-                    // Table sayfasındaki gibi filter endpointi
-                    const response = await predictedEarthquakeService.getFilteredEarthquakes({
-                        startDate,
-                        endDate,
-                        city,
-                        minMagnitude,
-                        maxMagnitude,
-                        page: 0,
-                        size: 1000 // Harita için yeterli büyüklükte bir sayı
-                    });
-                    // Table sayfasında response.data, burada response olabilir
-                    responseData = response.content || response; // API'nin döndürdüğü yapıya göre
-                }
+                let responseData = await predictedEarthquakeService.getMostSeverePredictedEarthquakes({
+                    startDate,
+                    endDate,
+                    city,
+                    minMagnitude,
+                    maxMagnitude,
+                });
                 setData(responseData);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);

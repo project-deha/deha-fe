@@ -39,24 +39,16 @@ export default function HistoryMapPage() {
             setError(null);
             try {
                 // Eğer filtreler default ise most-severe, değilse filter endpointi
-                const isDefaultFilter = !startDate && !endDate && !city && minMagnitude === 0 && maxMagnitude === 10;
                 let responseData;
-                if (isDefaultFilter) {
-                    responseData = await earthquakeService.getMostSevereEarthquakes();
-                } else {
-                    // Filter endpointi kullan
-                    const response = await earthquakeService.getFilteredEarthquakes({
+                responseData = await earthquakeService.getMostSevereEarthquakes(
+                    {
                         startDate,
                         endDate,
                         city,
                         minMagnitude,
-                        maxMagnitude,
-                        page: 0,
-                        size: 500// Harita için yeterli büyüklükte bir sayı
-                    });
-                    // Filter endpoint returns paginated data
-                    responseData = response.content || response;
-                }
+                        maxMagnitude
+                    }
+                );
                 setData(responseData);
             } catch (error) {
                 console.error('Veri yüklenirken hata oluştu:', error);
