@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useFilterStore } from '@/store/filterStore';
-import axiosInstance from '@/config/axios';
 import { predictedEarthquakeService } from '@/services/predictedEarthquakeService';
 import PredictionMap from '@/components/map/PredictionMap';
 
@@ -31,7 +30,7 @@ export default function PredictionsMapPage() {
             setLoading(true);
             setError(null);
             try {
-                let responseData = await predictedEarthquakeService.getMostSeverePredictedEarthquakes({
+                const responseData = await predictedEarthquakeService.getMostSeverePredictedEarthquakes({
                     startDate,
                     endDate,
                     city,
