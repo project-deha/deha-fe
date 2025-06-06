@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react';
 import Select, { MultiValue } from 'react-select';
 import axiosInstance from '@/config/axios';
 
-const cityOptions = turkishCities.map(city => ({ value: city, label: city }));
+const cityOptions = [
+    { value: 'SELECT_ALL', label: '🔸 Tümünü Seç' },
+    ...turkishCities.map(city => ({ value: city, label: city }))
+];
 
 interface UserDto {
     id: string;
@@ -34,6 +37,43 @@ export default function AlarmsPage() {
     const [alarms, setAlarms] = useState<Alarm[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Şehir seçimini yönet
+    const handleCityChange = (opts: MultiValue<CityOption>) => {
+        if (!Array.isArray(opts)) return;
+
+        const selectedValues = opts.map(opt => opt.value);
+        const hasSelectAll = selectedValues.includes('SELECT_ALL');
+        const actualCities = turkishCities;
+
+        if (hasSelectAll) {
+            // Eğer "Tümünü Seç" seçildiyse
+            if (selectedCities.length === actualCities.length) {
+                // Tüm şehirler zaten seçiliyse, hepsini kaldır
+                setSelectedCities([]);
+            } else {
+                // Tüm şehirleri seç
+                setSelectedCities([...actualCities]);
+            }
+        } else {
+            // Normal şehir seçimi
+            const validCities = selectedValues.filter(city => city !== 'SELECT_ALL');
+            setSelectedCities(validCities);
+        }
+    };
+
+    // Select bileşeni için value'yu hazırla
+    const getSelectValue = () => {
+        // Eğer tüm şehirler seçiliyse sadece "Tümünü Seç"i göster
+        if (selectedCities.length === turkishCities.length && selectedCities.length > 0) {
+            return [{ value: 'SELECT_ALL', label: '🔸 Tümünü Seç' }];
+        }
+
+        // Kısmi seçimde sadece seçili şehirleri göster
+        return cityOptions.filter(opt =>
+            opt.value !== 'SELECT_ALL' && selectedCities.includes(opt.value)
+        );
+    };
 
     const fetchAlarms = async () => {
         try {
@@ -134,8 +174,8 @@ export default function AlarmsPage() {
                             <Select
                                 isMulti
                                 options={cityOptions}
-                                value={cityOptions.filter(opt => selectedCities.includes(opt.value))}
-                                onChange={(opts: MultiValue<CityOption>) => setSelectedCities(Array.isArray(opts) ? opts.map((opt: CityOption) => opt.value) : [])}
+                                value={getSelectValue()}
+                                onChange={handleCityChange}
                                 className="mb-2"
                                 placeholder="Şehir seçiniz..."
                                 isDisabled={isLoading}
