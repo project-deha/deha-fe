@@ -43,6 +43,7 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
     const [activeDropdown, setActiveDropdown] = useState<'date' | 'city' | 'magnitude' | null>(null);
     const [isMobile, setIsMobile] = useState(false);
     const pathname = usePathname();
+    const [previousPathname, setPreviousPathname] = useState(pathname);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -52,6 +53,46 @@ const SearchBar = ({ onFilterChange, mode = 'prediction' }: SearchBarProps) => {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    // Sayfa geçişlerinde filtreleri yönet
+    useEffect(() => {
+        const isPredictionsPage = (path: string) => path.includes('/predictions/');
+        const isHistoryPage = (path: string) => path.includes('/history/');
+
+        const wasPredictionsPage = isPredictionsPage(previousPathname);
+        const isNowPredictionsPage = isPredictionsPage(pathname);
+        const wasHistoryPage = isHistoryPage(previousPathname);
+        const isNowHistoryPage = isHistoryPage(pathname);
+
+        // Predictions sayfalarından history sayfalarına geçiş
+        if (wasPredictionsPage && isNowHistoryPage) {
+            const filtersToReset = {
+                startDate: '',
+                endDate: '',
+                city: '',
+                minMagnitude: 0,
+                maxMagnitude: 10
+            };
+            setFilters(filtersToReset);
+            setTempFilters(filtersToReset);
+        }
+        // History sayfalarından predictions sayfalarına geçiş
+        else if (wasHistoryPage && isNowPredictionsPage) {
+            const filtersToReset = {
+                startDate: '',
+                endDate: '',
+                city: '',
+                minMagnitude: 0,
+                maxMagnitude: 10
+            };
+            setFilters(filtersToReset);
+            setTempFilters(filtersToReset);
+        }
+        // Predictions sayfaları arasında geçiş - filtreleri koru (hiçbir şey yapma)
+        // History sayfaları arasında geçiş - filtreleri koru (hiçbir şey yapma)
+
+        setPreviousPathname(pathname);
+    }, [pathname, previousPathname, setFilters]);
 
     useEffect(() => {
         setTempFilters({
