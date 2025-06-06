@@ -46,7 +46,7 @@ export default function ReportsPage() {
         }
     };
 
-    const handleDownload = async (reportId: string) => {
+    const handleDownload = async (reportId: string, reportTitle: string) => {
         try {
             setDownloadingId(reportId);
             const response = await axiosInstance.get(`/report/${reportId}`, {
@@ -62,7 +62,7 @@ export default function ReportsPage() {
             // Create a temporary link element
             const link = document.createElement('a');
             link.href = url;
-            link.download = `report-${reportId}.docx`; // Changed from .pdf to .docx
+            link.download = `DEHA-${reportTitle}.pdf`;
 
             // Append to body, click, and remove
             document.body.appendChild(link);
@@ -166,7 +166,7 @@ export default function ReportsPage() {
                                 <td className="px-6 py-4 whitespace-nowrap">{report.date}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <button
-                                        onClick={() => handleDownload(report.id)}
+                                        onClick={() => handleDownload(report.id, report.title)}
                                         disabled={downloadingId === report.id}
                                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-cyan-500 hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
