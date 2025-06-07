@@ -62,7 +62,7 @@ export default function ReportsPage() {
             // Create a temporary link element
             const link = document.createElement('a');
             link.href = url;
-            link.download = `DEHA-${reportTitle}.docx`;
+            link.download = `DEHA-${reportTitle}.pdf`;
 
             // Append to body, click, and remove
             document.body.appendChild(link);
