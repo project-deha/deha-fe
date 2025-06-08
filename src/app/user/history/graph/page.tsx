@@ -176,7 +176,7 @@ export default function HistoryGraphPage() {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `gecmis_deprem_buyukluk_dagilimi_${timeRange}yil.csv`);
+        link.setAttribute("download", `gecmis_deprem_buyukluk_dagilimi_tum_zamanlar.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -190,16 +190,28 @@ export default function HistoryGraphPage() {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `gecmis_deprem_sehir_dagilimi_${timeRange}yil.csv`);
+        link.setAttribute("download", `gecmis_deprem_sehir_dagilimi_tum_zamanlar.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
-    // Modern renkler ve gradientler
-    const COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#1d4ed8', '#1e40af', '#1e3a8a'];
+    // Modern mavi-kırmızı renk paleti
+    const COLORS = [
+        '#2563eb', // Mavi
+        '#dc2626', // Kırmızı
+        '#3b82f6', // Açık mavi
+        '#ef4444', // Açık kırmızı
+        '#1d4ed8', // Koyu mavi
+        '#b91c1c', // Koyu kırmızı
+        '#60a5fa', // Çok açık mavi
+        '#f87171', // Çok açık kırmızı
+        '#1e40af', // Daha koyu mavi
+        '#991b1b', // Daha koyu kırmızı
+    ];
     const BAR_GRADIENT_ID = 'barGradient';
     const LINE_GRADIENT_ID = 'lineGradient';
+    const PIE_GRADIENT_ID = 'pieGradient';
 
     // Modern Tooltip
     const CustomTooltip = ({ active, payload, label }: {
@@ -213,12 +225,15 @@ export default function HistoryGraphPage() {
     }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white p-4 border rounded-lg shadow-lg min-w-[180px]">
-                    <p className="font-semibold text-blue-700 mb-1">{label}</p>
+                <div className="bg-white p-4 border-2 border-blue-200 rounded-xl shadow-2xl min-w-[200px] backdrop-blur-sm">
+                    <p className="font-bold text-blue-800 mb-2 text-center text-lg">{label}</p>
                     {payload.map((item, idx: number) => (
-                        <div key={idx} className="flex justify-between text-sm mb-1">
-                            <span className="font-medium" style={{ color: item.color }}>{item.name}:</span>
-                            <span className="ml-2">{item.value}</span>
+                        <div key={idx} className="flex justify-between items-center text-sm mb-2 p-2 rounded-lg bg-gray-50">
+                            <span className="font-semibold flex items-center" style={{ color: item.color }}>
+                                <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
+                                {item.name}:
+                            </span>
+                            <span className="ml-2 font-bold text-gray-800">{item.value.toLocaleString()}</span>
                         </div>
                     ))}
                 </div>
@@ -241,15 +256,17 @@ export default function HistoryGraphPage() {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
-                <div className="bg-white p-4 border rounded-lg shadow-lg min-w-[140px]">
-                    <p className="font-semibold text-blue-700 mb-1">{data.name}</p>
-                    <div className="flex justify-between text-sm mb-1">
-                        <span>Deprem Sayısı:</span>
-                        <span>{data.value.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span>Oran:</span>
-                        <span>%{data.percentage}</span>
+                <div className="bg-white p-4 border-2 border-red-200 rounded-xl shadow-2xl min-w-[180px] backdrop-blur-sm">
+                    <p className="font-bold text-red-800 mb-3 text-center text-lg">{data.name}</p>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
+                            <span className="font-medium text-blue-700">Deprem Sayısı:</span>
+                            <span className="font-bold text-blue-900">{data.value.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-2 bg-red-50 rounded-lg">
+                            <span className="font-medium text-red-700">Oran:</span>
+                            <span className="font-bold text-red-900">%{data.percentage}</span>
+                        </div>
                     </div>
                 </div>
             );
@@ -268,7 +285,7 @@ export default function HistoryGraphPage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 mb-6">
+                    <div className="flex flex-wrap gap-3 mb-6 justify-center">
                         <Button
                             variant={timeRange === '5' ? 'default' : 'outline'}
                             onClick={() => setTimeRange('5')}
@@ -282,16 +299,30 @@ export default function HistoryGraphPage() {
                             Son 10 Yıl
                         </Button>
                         <Button
-                            variant={timeRange === '15' ? 'default' : 'outline'}
-                            onClick={() => setTimeRange('15')}
-                        >
-                            Son 15 Yıl
-                        </Button>
-                        <Button
                             variant={timeRange === '20' ? 'default' : 'outline'}
                             onClick={() => setTimeRange('20')}
                         >
                             Son 20 Yıl
+                        </Button>
+                        <Button
+                            variant={timeRange === '50' ? 'default' : 'outline'}
+                            onClick={() => setTimeRange('50')}
+                        >
+                            Son 50 Yıl
+                        </Button>
+                        <Button
+                            variant={timeRange === '75' ? 'default' : 'outline'}
+                            onClick={() => setTimeRange('75')}
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0"
+                        >
+                            Son 75 Yıl
+                        </Button>
+                        <Button
+                            variant={timeRange === '100' ? 'default' : 'outline'}
+                            onClick={() => setTimeRange('100')}
+                            className="bg-gradient-to-r from-blue-600 to-red-500 hover:from-blue-700 hover:to-red-600 text-white border-0"
+                        >
+                            Son 100 Yıl
                         </Button>
                     </div>
 
@@ -301,13 +332,22 @@ export default function HistoryGraphPage() {
                             <svg width="0" height="0">
                                 <defs>
                                     <linearGradient id={LINE_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#2563eb" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.3} />
+                                        <stop offset="0%" stopColor="#2563eb" stopOpacity={1} />
+                                        <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.4} />
+                                    </linearGradient>
+                                    <linearGradient id="redLineGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#dc2626" stopOpacity={1} />
+                                        <stop offset="50%" stopColor="#ef4444" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="#f87171" stopOpacity={0.4} />
                                     </linearGradient>
                                 </defs>
                             </svg>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800">Yıllık Deprem Sayısının Değişimi</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Yıllık Deprem Sayısının Değişimi</h2>
+
+                                </div>
                                 <Button
                                     variant="outline"
                                     onClick={downloadTimeSeriesData}
@@ -346,21 +386,23 @@ export default function HistoryGraphPage() {
                                                 yAxisId="left"
                                                 type="monotone"
                                                 dataKey="count"
-                                                stroke="url(#lineGradient)"
-                                                strokeWidth={3}
+                                                stroke="#2563eb"
+                                                strokeWidth={4}
                                                 name="Deprem Sayısı"
-                                                dot={false}
-                                                activeDot={false}
+                                                dot={{ fill: '#2563eb', strokeWidth: 2, r: 6 }}
+                                                activeDot={{ r: 8, fill: '#1d4ed8', stroke: '#ffffff', strokeWidth: 2 }}
+                                                strokeDasharray="0"
                                             />
                                             <Line
                                                 yAxisId="right"
                                                 type="monotone"
                                                 dataKey="avgMagnitude"
                                                 stroke="#dc2626"
-                                                strokeWidth={2}
+                                                strokeWidth={3}
                                                 name="Ortalama Büyüklük"
-                                                dot={false}
-                                                activeDot={false}
+                                                dot={{ fill: '#dc2626', strokeWidth: 2, r: 5 }}
+                                                activeDot={{ r: 7, fill: '#b91c1c', stroke: '#ffffff', strokeWidth: 2 }}
+                                                strokeDasharray="5 5"
                                             />
                                         </LineChart>
                                     </ResponsiveContainer>
@@ -382,13 +424,17 @@ export default function HistoryGraphPage() {
                             <svg width="0" height="0">
                                 <defs>
                                     <linearGradient id={BAR_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
-                                        <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.3} />
+                                        <stop offset="0%" stopColor="#2563eb" stopOpacity={1} />
+                                        <stop offset="30%" stopColor="#3b82f6" stopOpacity={0.9} />
+                                        <stop offset="70%" stopColor="#60a5fa" stopOpacity={0.7} />
+                                        <stop offset="100%" stopColor="#93c5fd" stopOpacity={0.5} />
                                     </linearGradient>
                                 </defs>
                             </svg>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800">Deprem Büyüklük Dağılımı</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Deprem Büyüklük Dağılımı</h2>
+                                </div>
                                 <Button
                                     variant="outline"
                                     onClick={downloadMagnitudeData}
@@ -430,14 +476,16 @@ export default function HistoryGraphPage() {
                                                 }}
                                                 tick={{ fontSize: 13, fill: '#374151' }}
                                             />
-                                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(64, 150, 255, 0.1)' }} />
+                                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37, 99, 235, 0.1)' }} />
                                             <Bar
                                                 dataKey="count"
                                                 name="Deprem Sayısı"
                                                 fill={`url(#${BAR_GRADIENT_ID})`}
-                                                radius={[8, 8, 0, 0]}
-                                                maxBarSize={60}
-                                                minPointSize={5}
+                                                radius={[12, 12, 0, 0]}
+                                                maxBarSize={80}
+                                                minPointSize={8}
+                                                stroke="#1d4ed8"
+                                                strokeWidth={1}
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -446,7 +494,7 @@ export default function HistoryGraphPage() {
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold mb-2">Büyüklük Dağılımı Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu histogram, son {timeRange} yıl içinde Türkiye&apos;de meydana gelen depremlerin
+                                    Bu histogram, Türkiye&apos;de kaydedilen tüm depremlerin
                                     büyüklük aralıklarına göre dağılımını göstermektedir. Küçük büyüklükteki depremlerin
                                     çok daha sık olduğu, büyük depremlerin ise nadir olduğu açıkça görülmektedir.
                                 </p>
@@ -456,14 +504,16 @@ export default function HistoryGraphPage() {
                         {/* Şehir Dağılımı Grafiği */}
                         <div className="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800">Bölgesel Deprem Dağılımı</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Bölgesel Deprem Dağılımı</h2>
+                                </div>
                                 <Button
                                     variant="outline"
                                     onClick={downloadCityData}
                                     className="flex items-center gap-2"
                                 >
                                     <Download className="h-4 w-4" />
-                                    Veriyi İndir
+                                    Analizi İndir
                                 </Button>
                             </div>
                             {loading ? (
@@ -492,7 +542,7 @@ export default function HistoryGraphPage() {
                                                     if (percent < 0.02) return null; // %2'den küçük dilimler için label gösterme
 
                                                     const RADIAN = Math.PI / 180;
-                                                    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+                                                    const radius = innerRadius + (outerRadius - innerRadius) * 1.25;
                                                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -500,26 +550,30 @@ export default function HistoryGraphPage() {
                                                         <text
                                                             x={x}
                                                             y={y}
-                                                            fill="#374151"
+                                                            fill="#1f2937"
                                                             textAnchor={x > cx ? 'start' : 'end'}
                                                             dominantBaseline="central"
                                                             style={{
-                                                                fontSize: 12,
-                                                                fontWeight: 600,
-                                                                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                                                                fontSize: 13,
+                                                                fontWeight: 700,
+                                                                textShadow: '2px 2px 4px rgba(255,255,255,0.9)'
                                                             }}
                                                         >
                                                             {`${name}`}
                                                         </text>
                                                     );
                                                 }}
-                                                outerRadius={160}
+                                                outerRadius={170}
+                                                innerRadius={0}
+                                                paddingAngle={2}
                                                 dataKey="value"
                                             >
                                                 {cityData.map((entry, index) => (
                                                     <Cell
                                                         key={`cell-${index}`}
                                                         fill={COLORS[index % COLORS.length]}
+                                                        stroke="#ffffff"
+                                                        strokeWidth={2}
                                                     />
                                                 ))}
                                             </Pie>
@@ -529,30 +583,12 @@ export default function HistoryGraphPage() {
                                 </div>
                             )}
 
-                            {/* Manuel Legend */}
-                            {!loading && cityData.length > 0 && (
-                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                                    <h3 className="font-semibold mb-3 text-center">Şehir Dağılımı</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                        {cityData.map((entry, index) => (
-                                            <div key={entry.name} className="flex items-center gap-2">
-                                                <div
-                                                    className="w-4 h-4 rounded-full flex-shrink-0"
-                                                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                                                />
-                                                <span className="text-sm text-gray-700 truncate">
-                                                    {entry.name} ({entry.percentage}%)
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+
 
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold mb-2">Bölgesel Dağılım Hakkında</h3>
                                 <p className="text-gray-600 text-sm">
-                                    Bu pasta grafik, son {timeRange} yıl içinde Türkiye&apos;de kaydedilen depremlerin
+                                    Bu pasta grafik, Türkiye&apos;de kaydedilen tüm depremlerin
                                     şehirlere göre dağılımını göstermektedir. En çok deprem aktivitesi gösteren şehirler
                                     ayrı ayrı gösterilirken, diğer şehirler &quot;Diğer&quot; kategorisi altında toplanmıştır.
                                 </p>

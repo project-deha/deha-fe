@@ -7,7 +7,7 @@ export default function UserAboutPage() {
                     <h2 className="text-xl font-semibold mb-2">Uygulama Hakkında</h2>
                     <p className="text-gray-600 mb-4">
                         Bu uygulama deprem verilerini analiz etmek, raporlamak ve kullanıcıya sunmak için geliştirilmiştir.<br />
-                        İletişim: <a href="mailto:destek@deha.com" className="text-blue-600 hover:underline">destek@deha.com</a>
+                        İletişim: <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:underline">projectdeha2025@gmail.com</a>
                     </p>
                 </div>
             </div>

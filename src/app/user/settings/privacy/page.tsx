@@ -7,7 +7,7 @@ export default function UserPrivacyPage() {
                     <h2 className="text-xl font-semibold mb-2">Veri Güvenliği ve Gizliliği</h2>
                     <p className="text-gray-600 mb-4">
                         Kişisel verilerinizin güvenliği bizim için önemlidir. Verileriniz yalnızca uygulama işlevselliği için kullanılır ve üçüncü şahıslarla paylaşılmaz.<br />
-                        Detaylı bilgi için lütfen <a href="mailto:destek@deha.com" className="text-blue-600 hover:underline">destek@deha.com</a> adresine ulaşın.
+                        Detaylı bilgi için lütfen <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:underline">projectdeha2025@gmail.com</a> adresine ulaşın.
                     </p>
                 </div>
             </div>

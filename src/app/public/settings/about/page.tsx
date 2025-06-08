@@ -36,16 +36,13 @@ export default function AboutPage() {
                         <h2 className="text-xl font-semibold mb-4">İletişim</h2>
                         <div className="space-y-2 text-gray-600">
                             <p>
-                                Adres: İstanbul, Türkiye
+                                Adres: Ankara, Türkiye
                             </p>
                             <p>
                                 E-posta:
-                                <a href="mailto:info@deha.com" className="text-blue-600 hover:text-blue-800 ml-2">
-                                    info@deha.com
+                                <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:text-blue-800 ml-2">
+                                    projectdeha2025@gmail.com
                                 </a>
-                            </p>
-                            <p>
-                                Telefon: +90 (212) XXX XX XX
                             </p>
                         </div>
                     </section>

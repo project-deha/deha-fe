@@ -12,7 +12,7 @@ export default function UserHelpPage() {
                     </ul>
                     <h2 className="text-xl font-semibold mb-2 mt-6">Destek</h2>
                     <p className="text-gray-600 mb-4">
-                        Daha fazla yardıma ihtiyacınız varsa lütfen <a href="mailto:destek@deha.com" className="text-blue-600 hover:underline">destek@deha.com</a> adresine e-posta gönderin.
+                        Daha fazla yardıma ihtiyacınız varsa lütfen <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:underline">projectdeha2025@gmail.com</a> adresine e-posta gönderin.
                     </p>
                 </div>
             </div>

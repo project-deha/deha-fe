@@ -45,8 +45,8 @@ export default function HelpPage() {
                         <h2 className="text-xl font-semibold mb-4">İletişim</h2>
                         <p className="text-gray-600">
                             Başka sorularınız için:
-                            <a href="mailto:support@deha.com" className="text-blue-600 hover:text-blue-800 ml-2">
-                                support@deha.com
+                            <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:text-blue-800 ml-2">
+                                projectdeha2025@gmail.com
                             </a>
                         </p>
                     </section>

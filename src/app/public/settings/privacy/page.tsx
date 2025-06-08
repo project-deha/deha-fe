@@ -35,8 +35,8 @@ export default function PrivacyPage() {
                         <h2 className="text-xl font-semibold mb-4">İletişim</h2>
                         <p className="text-gray-600">
                             Gizlilik politikamız hakkında sorularınız için:
-                            <a href="mailto:privacy@deha.com" className="text-blue-600 hover:text-blue-800 ml-2">
-                                privacy@deha.com
+                            <a href="mailto:projectdeha2025@gmail.com" className="text-blue-600 hover:text-blue-800 ml-2">
+                                projectdeha2025@gmail.com
                             </a>
                         </p>
                     </section>

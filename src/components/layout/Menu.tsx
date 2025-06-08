@@ -9,7 +9,7 @@ const menuItems = [
     { href: '/public/home', label: 'Anasayfa', icon: <span className="mr-2">🏠</span> },
     { href: '/public/predictions/map', label: 'Harita', icon: <span className="mr-2">🗺️</span> },
     { href: '/public/predictions/table', label: 'Tablo', icon: <span className="mr-2">📋</span> },
-    { href: '/public/settings', label: 'Ayarlar', icon: <span className="mr-2">⚙️</span> },
+    { href: '/public/settings', label: 'Bilgi ve Yardım', icon: <span className="mr-2">ℹ️</span> },
 ];
 
 const Menu = () => {

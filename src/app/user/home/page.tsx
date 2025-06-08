@@ -38,11 +38,11 @@ const menuItems = [
         icon: '📄',
     },
     {
-        title: 'Ayarlar',
+        title: 'Bilgi ve Yardım',
         links: [
-            { label: 'Ayarlar', href: '/user/settings', icon: null },
+            { label: 'Bilgi ve Yardım', href: '/user/settings', icon: null },
         ],
-        icon: '⚙️',
+        icon: 'ℹ️',
     },
     {
         title: 'Profil',

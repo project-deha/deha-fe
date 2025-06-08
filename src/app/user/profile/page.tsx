@@ -19,6 +19,9 @@ export default function ProfilePage() {
     const [repeatPassword, setRepeatPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
     const user = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
@@ -87,6 +90,9 @@ export default function ProfilePage() {
         setRepeatPassword('');
         setPasswordError('');
         setPasswordSuccess('');
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowRepeatPassword(false);
     };
 
     const handlePasswordSave = async () => {
@@ -227,33 +233,87 @@ export default function ProfilePage() {
                         <h2 className="text-xl font-bold mb-4 text-center">Şifre Değiştir</h2>
                         <div className="mb-4">
                             <label className="block font-medium mb-1">Mevcut Şifre</label>
-                            <input
-                                type="password"
-                                value={currentPassword}
-                                onChange={e => setCurrentPassword(e.target.value)}
-                                className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
-                                placeholder="Mevcut şifreniz"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showCurrentPassword ? "text" : "password"}
+                                    value={currentPassword}
+                                    onChange={e => setCurrentPassword(e.target.value)}
+                                    className="border rounded p-2 w-full pr-10 focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Mevcut şifreniz"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    {showCurrentPassword ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                         <div className="mb-4">
                             <label className="block font-medium mb-1">Yeni Şifre</label>
-                            <input
-                                type="password"
-                                value={newPassword}
-                                onChange={e => setNewPassword(e.target.value)}
-                                className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
-                                placeholder="Yeni şifre"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    className="border rounded p-2 w-full pr-10 focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Yeni şifre"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    {showNewPassword ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                         <div className="mb-4">
                             <label className="block font-medium mb-1">Yeni Şifre (Tekrar)</label>
-                            <input
-                                type="password"
-                                value={repeatPassword}
-                                onChange={e => setRepeatPassword(e.target.value)}
-                                className="border rounded p-2 w-full focus:ring-2 focus:ring-blue-400"
-                                placeholder="Yeni şifre tekrar"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showRepeatPassword ? "text" : "password"}
+                                    value={repeatPassword}
+                                    onChange={e => setRepeatPassword(e.target.value)}
+                                    className="border rounded p-2 w-full pr-10 focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Yeni şifre tekrar"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    {showRepeatPassword ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                         {passwordError && <div className="text-red-500 mb-2 text-sm">{passwordError}</div>}
                         {passwordSuccess && <div className="text-green-600 mb-2 text-sm">{passwordSuccess}</div>}

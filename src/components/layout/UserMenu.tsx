@@ -21,7 +21,7 @@ const menuItems = [
     { label: 'Tahminler', icon: <span className="mr-2">🔮</span>, submenu: predictionsSubmenu },
     { label: 'Geçmiş Depremler', icon: <span className="mr-2">⏳</span>, submenu: historySubmenu },
     { label: 'Profilim', href: '/user/profile', icon: <span className="mr-2">👤</span> },
-    { label: 'Ayarlar', href: '/user/settings', icon: <span className="mr-2">⚙️</span> },
+    { label: 'Bilgi ve Yardım', href: '/user/settings', icon: <span className="mr-2">ℹ️</span> },
     { label: 'Alarmlar', href: '/user/alarms', icon: <span className="mr-2">⏰</span> },
     { label: 'Raporlar', href: '/user/reports', icon: <span className="mr-2">📄</span> },
 ];

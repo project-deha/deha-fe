@@ -12,13 +12,8 @@ export default function Footer() {
                         <h3 className="text-lg font-semibold mb-4">İletişim</h3>
                         <ul className="space-y-2 text-center sm:text-left">
                             <li>
-                                <a href="mailto:info@deha.com" className="hover:text-blue-400 transition-colors">
-                                    info@deha.com
-                                </a>
-                            </li>
-                            <li>
-                                <a href="tel:+902121234567" className="hover:text-blue-400 transition-colors">
-                                    +90 (212) 123 45 67
+                                <a href="mailto:projectdeha2025@gmail.com" className="hover:text-blue-400 transition-colors">
+                                    projectdeha2025@gmail.com
                                 </a>
                             </li>
                             <li className="text-gray-400">

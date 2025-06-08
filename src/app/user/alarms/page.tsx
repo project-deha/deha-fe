@@ -37,6 +37,7 @@ export default function AlarmsPage() {
     const [alarms, setAlarms] = useState<Alarm[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
     // Şehir seçimini yönet
     const handleCityChange = (opts: MultiValue<CityOption>) => {
@@ -138,6 +139,26 @@ export default function AlarmsPage() {
         }
     };
 
+    const handleDeleteAllAlarms = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Tüm alarmları tek tek sil
+            for (const alarm of alarms) {
+                await axiosInstance.delete(`/alarm/${alarm.id}`);
+            }
+
+            await fetchAlarms();
+            setShowDeleteAllModal(false);
+        } catch (err) {
+            setError('Alarmlar silinirken bir hata oluştu.');
+            console.error('Error deleting all alarms:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <main className="container mx-auto px-4 py-8 min-h-screen flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-8 text-center w-full">Deprem Alarmı Oluştur</h1>
@@ -147,6 +168,22 @@ export default function AlarmsPage() {
                     {error}
                 </div>
             )}
+
+            {/* Bilgilendirme Kutusu */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 w-full max-w-xl">
+                <div className="flex items-start space-x-3">
+                    <div className="text-blue-600 text-xl">📧</div>
+                    <div>
+                        <h3 className="text-blue-800 font-semibold mb-2">E-posta Alarm Sistemi</h3>
+                        <p className="text-blue-700 text-sm leading-relaxed">
+                            Sistem, AFAD (Afet ve Acil Durum Yönetimi Başkanlığı)'dan deprem verilerini sürekli takip eder.
+                            Kurduğunuz alarm kriterlerine uygun deprem tespit edildiğinde,
+                            e-posta adresinize anında bildirim gönderilir. Alarmlar 7/24 aktif olarak çalışır ve
+                            belirlediğiniz şehir ve büyüklük aralığındaki depremler için size resmi veriler ışığında haber verir.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <button
                 onClick={() => setShowModal(true)}
@@ -229,9 +266,57 @@ export default function AlarmsPage() {
                 </div>
             )}
 
+            {/* Tümünü Sil Onay Modal */}
+            {showDeleteAllModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-2 relative animate-fadeIn">
+                        <div className="text-center">
+                            <div className="text-red-600 text-4xl mb-4">⚠️</div>
+                            <h2 className="text-xl font-bold mb-2 text-gray-900">Tüm Alarmları Sil</h2>
+                            <p className="text-gray-600 mb-6">
+                                Bu işlem geri alınamaz. Tüm alarmlarınız ({alarms.length} adet) kalıcı olarak silinecek.
+                                Emin misiniz?
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={handleDeleteAllAlarms}
+                                    className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition font-semibold text-base"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Siliniyor...' : 'Evet, Tümünü Sil'}
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteAllModal(false)}
+                                    className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition font-semibold text-base"
+                                    disabled={isLoading}
+                                >
+                                    İptal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Alarm Listesi */}
             <div className="mt-8 w-full max-w-xl">
-                <h2 className="text-lg font-semibold mb-2">Alarmlarınız</h2>
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-semibold">Alarmlarınız</h2>
+                        <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
+                            {alarms.length}
+                        </span>
+                    </div>
+                    {alarms.length > 0 && (
+                        <button
+                            onClick={() => setShowDeleteAllModal(true)}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded border border-red-200 hover:bg-red-50 transition"
+                            disabled={isLoading}
+                        >
+                            Tümünü Temizle
+                        </button>
+                    )}
+                </div>
                 {isLoading && <div className="text-gray-400">Yükleniyor...</div>}
                 {!isLoading && alarms.length === 0 && <div className="text-gray-400">Henüz alarm eklenmedi.</div>}
                 <ul>
