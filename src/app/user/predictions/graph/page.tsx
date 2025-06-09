@@ -131,24 +131,6 @@ export default function PredictionsGraphPage() {
         return data;
     };
 
-    // Büyüklük dağılımı verisi üretme
-    const generateMagnitudeDistribution = (months: number) => {
-        const ranges = [
-            '2.0-2.9', '3.0-3.9', '4.0-4.9',
-            '5.0-5.9', '6.0-6.9', '7.0+'
-        ];
-
-        // Tahminler için ağırlıklar
-        const weights = [0.40, 0.35, 0.15, 0.07, 0.02, 0.01];
-        const totalPredictions = months * 30; // Ay başına ortalama tahmin
-
-        return ranges.map((range, index) => ({
-            range,
-            count: Math.floor(totalPredictions * weights[index]),
-            percentage: Number((weights[index] * 100).toFixed(1))
-        }));
-    };
-
     // Derinlik ve büyüklük verisi üretme
     const generateDepthMagnitudeData = (months: number) => {
         const data: DepthMagnitudeData[] = [];
@@ -183,9 +165,6 @@ export default function PredictionsGraphPage() {
             setMagnitudeData(formattedMagnitudeData);
         } catch (err) {
             console.error('Büyüklük dağılımı API hatası:', err);
-            // Hata durumunda fallback data kullan
-            const fallbackMagnitudeData = generateMagnitudeDistribution(Number(timeRange));
-            setMagnitudeData(fallbackMagnitudeData);
         }
     };
 
@@ -205,30 +184,7 @@ export default function PredictionsGraphPage() {
             setCityData(formattedCityData);
         } catch (err) {
             console.error('Şehir dağılımı API hatası:', err);
-            // Hata durumunda fallback data kullan
-            const fallbackCityData = generateCityDistribution(Number(timeRange));
-            setCityData(fallbackCityData);
         }
-    };
-
-    // Fallback şehir dağılımı verisi üretme
-    const generateCityDistribution = (months: number) => {
-        const cities = [
-            { name: "İstanbul", weight: 0.25 },
-            { name: "İzmir", weight: 0.20 },
-            { name: "Ankara", weight: 0.15 },
-            { name: "Antalya", weight: 0.12 },
-            { name: "Bursa", weight: 0.10 },
-            { name: "Diğer", weight: 0.18 }
-        ];
-
-        const totalPredictions = months * 30;
-
-        return cities.map(city => ({
-            name: city.name,
-            value: Math.floor(totalPredictions * city.weight),
-            percentage: Number((city.weight * 100).toFixed(1))
-        }));
     };
 
     useEffect(() => {
