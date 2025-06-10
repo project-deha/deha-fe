@@ -67,7 +67,6 @@ export default function PredictionsGraphPage() {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState('12'); // Ay cinsinden
     const [magnitudeData, setMagnitudeData] = useState<MagnitudeDistribution[]>([]);
-    const [depthMagnitudeData, setDepthMagnitudeData] = useState<DepthMagnitudeData[]>([]);
     const [cityData, setCityData] = useState<RegionDistribution[]>([]);
 
     // Backend'den aylık deprem istatistiklerini çekme
@@ -105,66 +104,10 @@ export default function PredictionsGraphPage() {
         } catch (err) {
             console.error('API hatası:', err);
             setError('Veri yüklenirken bir hata oluştu.');
-            // Hata durumunda fake data kullan
-            const fallbackData = generatePredictionData(months);
-            setData(fallbackData);
+            setData([]);
         } finally {
             setLoading(false);
         }
-    };
-
-    // Simüle edilmiş tahmin verisi üretimi
-    const generatePredictionData = (months: number) => {
-        const data: PredictionData[] = [];
-        const startDate = new Date('2025-03-01');
-        const endDate = new Date('2025-03-01');
-        endDate.setMonth(endDate.getMonth() + months);
-
-        for (let date = new Date(startDate); date <= endDate; date.setMonth(date.getMonth() + 1)) {
-            const predictedCount = Math.floor(Math.random() * 30) + 20;
-            data.push({
-                date: date.toISOString().split('T')[0].slice(0, 7),
-                predictedCount: predictedCount,
-                avgMagnitude: Number((Math.random() * 2 + 3).toFixed(1))
-            });
-        }
-        return data;
-    };
-
-    // Büyüklük dağılımı verisi üretme
-    const generateMagnitudeDistribution = (months: number) => {
-        const ranges = [
-            '2.0-2.9', '3.0-3.9', '4.0-4.9',
-            '5.0-5.9', '6.0-6.9', '7.0+'
-        ];
-
-        // Tahminler için ağırlıklar
-        const weights = [0.40, 0.35, 0.15, 0.07, 0.02, 0.01];
-        const totalPredictions = months * 30; // Ay başına ortalama tahmin
-
-        return ranges.map((range, index) => ({
-            range,
-            count: Math.floor(totalPredictions * weights[index]),
-            percentage: Number((weights[index] * 100).toFixed(1))
-        }));
-    };
-
-    // Derinlik ve büyüklük verisi üretme
-    const generateDepthMagnitudeData = (months: number) => {
-        const data: DepthMagnitudeData[] = [];
-        const totalPoints = months * 20; // Her ay için ortalama 20 tahmin
-
-        for (let i = 0; i < totalPoints; i++) {
-            const depth = Math.floor(Math.random() * 700);
-            const baseMagnitude = 2 + Math.random() * 6;
-            const depthFactor = 1 - (depth / 1000);
-            const magnitude = Number((baseMagnitude * (0.7 + depthFactor * 0.3)).toFixed(1));
-            const count = Math.floor(Math.random() * 30) + 1;
-
-            data.push({ depth, magnitude, count });
-        }
-
-        return data;
     };
 
     // Büyüklük dağılımı verilerini backend'den çekme
@@ -183,9 +126,8 @@ export default function PredictionsGraphPage() {
             setMagnitudeData(formattedMagnitudeData);
         } catch (err) {
             console.error('Büyüklük dağılımı API hatası:', err);
-            // Hata durumunda fallback data kullan
-            const fallbackMagnitudeData = generateMagnitudeDistribution(Number(timeRange));
-            setMagnitudeData(fallbackMagnitudeData);
+            setError('Büyüklük dağılımı verisi yüklenemedi.');
+            setMagnitudeData([]);
         }
     };
 
@@ -205,49 +147,17 @@ export default function PredictionsGraphPage() {
             setCityData(formattedCityData);
         } catch (err) {
             console.error('Şehir dağılımı API hatası:', err);
-            // Hata durumunda fallback data kullan
-            const fallbackCityData = generateCityDistribution(Number(timeRange));
-            setCityData(fallbackCityData);
+            setError('Şehir dağılımı verisi yüklenemedi.');
+            setCityData([]);
         }
-    };
-
-    // Fallback şehir dağılımı verisi üretme
-    const generateCityDistribution = (months: number) => {
-        const cities = [
-            { name: "İstanbul", weight: 0.25 },
-            { name: "İzmir", weight: 0.20 },
-            { name: "Ankara", weight: 0.15 },
-            { name: "Antalya", weight: 0.12 },
-            { name: "Bursa", weight: 0.10 },
-            { name: "Diğer", weight: 0.18 }
-        ];
-
-        const totalPredictions = months * 30;
-
-        return cities.map(city => ({
-            name: city.name,
-            value: Math.floor(totalPredictions * city.weight),
-            percentage: Number((city.weight * 100).toFixed(1))
-        }));
     };
 
     useEffect(() => {
         const loadData = async () => {
-            // Gerçek veri için API çağrısı
             await fetchMonthlyEarthquakeStats(Number(timeRange));
-
-            // Şehir dağılımı için gerçek API çağrısı
             await fetchCityDistribution();
-
-            // Büyüklük dağılımı için gerçek API çağrısı
             await fetchMagnitudeDistribution();
-
-            // Diğer grafikler için henüz simüle edilmiş veri kullan
-            const depthMagData = generateDepthMagnitudeData(Number(timeRange));
-
-            setDepthMagnitudeData(depthMagData);
         };
-
         loadData();
     }, [timeRange]);
 
@@ -275,20 +185,6 @@ export default function PredictionsGraphPage() {
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", `deprem_tahmin_buyukluk_dagilimi_${timeRange}ay.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const downloadDepthMagnitudeData = () => {
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + "Derinlik (km),Büyüklük,Tahmin Sayısı\n"
-            + depthMagnitudeData.map(row => `${row.depth},${row.magnitude},${row.count}`).join("\n");
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `deprem_tahmin_derinlik_buyukluk_${timeRange}ay.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -412,6 +308,10 @@ export default function PredictionsGraphPage() {
                                 <div className="flex justify-center items-center h-[300px]">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                                 </div>
+                            ) : error ? (
+                                <div className="flex justify-center items-center h-[300px]">
+                                    <span className="text-red-600 font-bold">{error}</span>
+                                </div>
                             ) : (
                                 <div className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
@@ -483,6 +383,10 @@ export default function PredictionsGraphPage() {
                             {loading ? (
                                 <div className="flex justify-center items-center h-[300px]">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : error ? (
+                                <div className="flex justify-center items-center h-[300px]">
+                                    <span className="text-red-600 font-bold">{error}</span>
                                 </div>
                             ) : (
                                 <div className="h-[400px]">
