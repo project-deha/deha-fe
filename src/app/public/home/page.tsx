@@ -33,7 +33,7 @@ export default function HomePage() {
                         </div>
                         <h2 className="text-2xl font-bold mb-2 text-blue-800">Deprem Tahmini Tablosu</h2>
                         <p className="text-gray-600 mb-6 text-center">
-                            Bölgelere göre detaylı deprem tahmin verilerini tablo halinde inceleyin.
+                            Türkiye genelinde deprem tahmin verilerini tablo halinde inceleyin.
                         </p>
                         <a href="/public/predictions/table" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors">
                             Tabloyu Görüntüle

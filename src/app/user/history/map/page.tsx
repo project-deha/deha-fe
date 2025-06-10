@@ -161,7 +161,7 @@ export default function HistoryMapPage() {
                 {/* Renk Açıklamaları */}
                 <div className="mt-4 flex flex-wrap gap-4 justify-center">
                     <div className="flex items-center">
-                        <div className="w-4 h-4 bg-[#FF0000] rounded mr-2 animate-subtle-forward"></div>
+                        <div className="w-4 h-4 bg-[#9f0712] rounded mr-2 animate-subtle-forward"></div>
                         <span className="text-sm">7.0+</span>
                     </div>
                     <div className="flex items-center">

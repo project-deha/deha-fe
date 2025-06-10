@@ -50,10 +50,14 @@ export default function HistoricalMap({ historicalData, onCitySelect, detailsRou
             (d) => normalize(d.city) === normalize(cityName)
         );
         if (!found) return '#e0e0e0';
-        const risk = found.riskLevel;
-        const red = 255;
-        const green = Math.round(255 * (1 - risk));
-        return `rgb(${red},${green},0)`;
+        const risk = found.riskLevel; // 0-1 arası risk seviyesi
+
+        // Risk seviyesine göre sabit renk aralıkları (legend ile uyumlu)
+        if (risk >= 0.7) return '#9f0712'; // 7.0+ (En yüksek şiddet)
+        if (risk >= 0.6) return '#FF4500'; // 6.0-6.9 (Çok yüksek şiddet)
+        if (risk >= 0.5) return '#FFA500'; // 5.0-5.9 (Yüksek şiddet)
+        if (risk >= 0.4) return '#FFD700'; // 4.0-4.9 (Orta şiddet)
+        return '#90EE90'; // 4.0- (Düşük şiddet)
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

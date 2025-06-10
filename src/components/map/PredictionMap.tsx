@@ -55,12 +55,14 @@ export default function PredictionMap({ predictionData, onCitySelect, detailsRou
         );
         if (!found) return '#e0e0e0';
         const magnitude = found.magnitude;
-        // Magnitude-based color scale
-        if (magnitude >= 7.0) return '#FF0000'; // Kırmızı
-        if (magnitude >= 6.0) return '#FF4500'; // Turuncu-Kırmızı
-        if (magnitude >= 5.0) return '#FFA500'; // Turuncu
-        if (magnitude >= 4.0) return '#FFD700'; // Altın Sarısı
-        return '#90EE90'; // Açık Yeşil
+        // Yeni magnitude aralıklarına göre renk ölçeği (legend ile eşleşen renkler)
+        if (magnitude >= 5.5) return '#9f0712'; // Koyu Kırmızı (5.5+)
+        if (magnitude >= 5.0) return '#FF4500'; // Turuncu-Kırmızı (5.0-5.5)
+        if (magnitude >= 4.5) return '#FFA500'; // Turuncu (4.5-5.0)
+        if (magnitude >= 4.0) return '#FFD700'; // Altın Sarısı (4.0-4.5)
+        if (magnitude >= 3.5) return '#add627'; // Yeşil (3.5-4.0)
+        if (magnitude >= 3.0) return '#30e389'; // Açık Yeşil (3.0-3.5)
+        return '#e0e0e0'; // Gri (3.0'dan küçük)
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

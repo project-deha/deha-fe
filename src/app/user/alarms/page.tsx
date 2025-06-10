@@ -22,6 +22,10 @@ interface Alarm {
     minimumMagnitude: number;
     maximumMagnitude: number;
     city: string;
+    isActive?: boolean;  // Backend'den gelebilecek alan isimleri
+    active?: boolean;
+    enabled?: boolean;
+    isAktif?: boolean;
 }
 
 interface CityOption {
@@ -76,11 +80,24 @@ export default function AlarmsPage() {
         );
     };
 
+    // Alarm aktiflik durumunu belirlemek için yardımcı fonksiyon
+    const getAlarmActiveStatus = (alarm: Alarm): boolean => {
+        // Backend'den gelebilecek farklı alan isimlerini kontrol et
+        if (typeof alarm.isAktif === 'boolean') return alarm.isAktif;
+        if (typeof alarm.isActive === 'boolean') return alarm.isActive;
+        if (typeof alarm.active === 'boolean') return alarm.active;
+        if (typeof alarm.enabled === 'boolean') return alarm.enabled;
+
+        // Hiçbiri yoksa varsayılan olarak true (aktif) kabul et
+        return true;
+    };
+
     const fetchAlarms = async () => {
         try {
             setIsLoading(true);
             setError(null);
             const response = await axiosInstance.get('/alarm/me');
+            console.log('Backend alarm verisi:', response.data);
             setAlarms(response.data);
         } catch (err) {
             setError('Alarmlar yüklenirken bir hata oluştu.');
@@ -134,6 +151,35 @@ export default function AlarmsPage() {
         } catch (err) {
             setError('Alarm silinirken bir hata oluştu.');
             console.error('Error deleting alarm:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleToggleAlarmStatus = async (alarm: Alarm) => {
+        const currentStatus = getAlarmActiveStatus(alarm);
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Alarmın güncellenmiş halini Spring RequestBody olarak gönder
+            const updatedAlarm = {
+                ...alarm,
+                // Farklı backend alan isimleriyle güncellenmiş durumu ekle
+                isAktif: !currentStatus,
+                isActive: !currentStatus,
+                active: !currentStatus,
+                enabled: !currentStatus
+            };
+
+            await axiosInstance.put('/alarm', updatedAlarm);
+
+            // Alarmları yeniden yükle
+            await fetchAlarms();
+        } catch (err) {
+            setError('Alarm durumu güncellenirken bir hata oluştu.');
+            console.error('Error updating alarm status:', err);
         } finally {
             setIsLoading(false);
         }
@@ -322,20 +368,54 @@ export default function AlarmsPage() {
                 <ul>
                     {alarms.map((alarm) => (
                         <li key={alarm.id} className="mb-2 p-3 border rounded-lg bg-white shadow flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <b>Şehir:</b> {alarm.city}<br />
-                                <b>Büyüklük:</b> {alarm.minimumMagnitude} - {alarm.maximumMagnitude}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <b>Şehir:</b> {alarm.city}
+                                    <span className={`px-2 py-1 text-xs rounded-full ${getAlarmActiveStatus(alarm)
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {getAlarmActiveStatus(alarm) ? 'Aktif' : 'Pasif'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <b>Büyüklük:</b> {alarm.minimumMagnitude} - {alarm.maximumMagnitude}
+                                </div>
                             </div>
-                            <button
-                                onClick={() => handleDeleteAlarm(alarm.id)}
-                                className="mt-2 sm:mt-0 sm:ml-4 text-red-600 hover:text-red-800 flex items-center justify-center"
-                                aria-label="Alarmı Sil"
-                                disabled={isLoading}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12z" />
-                                </svg>
-                            </button>
+                            <div className="flex items-center gap-3 mt-2 sm:mt-0">
+                                {/* Switch kontrolü */}
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={getAlarmActiveStatus(alarm)}
+                                        onChange={() => handleToggleAlarmStatus(alarm)}
+                                        disabled={isLoading}
+                                        className="sr-only"
+                                    />
+                                    <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${getAlarmActiveStatus(alarm) ? 'bg-blue-600' : 'bg-gray-200'
+                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                        <span
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${getAlarmActiveStatus(alarm) ? 'translate-x-6' : 'translate-x-1'
+                                                }`}
+                                        />
+                                    </div>
+                                    <span className="ml-2 text-sm text-gray-600">
+                                        {getAlarmActiveStatus(alarm) ? 'Aktif' : 'Pasif'}
+                                    </span>
+                                </label>
+
+                                {/* Silme butonu */}
+                                <button
+                                    onClick={() => handleDeleteAlarm(alarm.id)}
+                                    className="text-red-600 hover:text-red-800 flex items-center justify-center"
+                                    aria-label="Alarmı Sil"
+                                    disabled={isLoading}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </li>
                     ))}
                 </ul>
