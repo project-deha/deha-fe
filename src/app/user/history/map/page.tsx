@@ -38,7 +38,6 @@ export default function HistoryMapPage() {
             setLoading(true);
             setError(null);
             try {
-                // Eğer filtreler default ise most-severe, değilse filter endpointi
                 const responseData = await earthquakeService.getMostSevereEarthquakes(
                     {
                         startDate,
