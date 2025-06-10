@@ -149,26 +149,34 @@ export default function PredictionsMapPage() {
                 )}
 
                 {/* Renk Açıklamaları */}
-                <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                <div className="mt-4 flex flex-wrap gap-3 justify-center">
                     <div className="flex items-center">
-                        <div className="w-4 h-4 bg-[#FF0000] rounded mr-2"></div>
+                        <div className="w-4 h-4 bg-[#9f0712] rounded mr-2"></div>
                         <span className="text-sm">7.0+</span>
                     </div>
                     <div className="flex items-center">
+                        <div className="w-4 h-4 bg-[#FF0000] rounded mr-2"></div>
+                        <span className="text-sm">5.5-7.0</span>
+                    </div>
+                    <div className="flex items-center">
                         <div className="w-4 h-4 bg-[#FF4500] rounded mr-2"></div>
-                        <span className="text-sm">6.0-6.9</span>
+                        <span className="text-sm">5.0-5.5</span>
                     </div>
                     <div className="flex items-center">
                         <div className="w-4 h-4 bg-[#FFA500] rounded mr-2"></div>
-                        <span className="text-sm">5.0-5.9</span>
+                        <span className="text-sm">4.5-5.0</span>
                     </div>
                     <div className="flex items-center">
                         <div className="w-4 h-4 bg-[#FFD700] rounded mr-2"></div>
-                        <span className="text-sm">4.0-4.9</span>
+                        <span className="text-sm">4.0-4.5</span>
                     </div>
                     <div className="flex items-center">
-                        <div className="w-4 h-4 bg-[#90EE90] rounded mr-2"></div>
-                        <span className="text-sm">4.0-</span>
+                        <div className="w-4 h-4 bg-[#add627] rounded mr-2"></div>
+                        <span className="text-sm">3.5-4.0</span>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="w-4 h-4 bg-[#30e389] rounded mr-2"></div>
+                        <span className="text-sm">3.0-3.5</span>
                     </div>
                 </div>
             </div>
