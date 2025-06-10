@@ -33,7 +33,6 @@ export default function HistoryMapPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // İlk yüklemede most-severe, filtreler değişince filter endpointi
         const fetchData = async () => {
             setLoading(true);
             setError(null);
